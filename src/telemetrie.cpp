@@ -1,3 +1,5 @@
+#include <WiFi.h>
+#include <WebServer.h>
 #include <SPI.h>
 #include <SD.h>
 #include <OneWire.h>
@@ -8,94 +10,138 @@ const int SD_CS_PIN = 5;
 const int ONE_WIRE_BUS = 4;
 const int HALL_PIN = 2;
 
+// --- WLAN & Webserver Setup ---
+const char* ssid = "RC-Telemetry";
+const char* password = "password123";
+WebServer server(80);
+
 // --- Sensor Setup ---
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-// --- RPM & Timing Variablen ---
+// --- Timing & State Machine Variablen ---
+// 1. Data Ingestion Pipeline (z.B. 5 Hz für detailliertere RPM-Kurven)
+unsigned long lastIngestionTime = 0;
+const int ingestionInterval = 200; 
+
+// 2. Asynchroner Temperatur-Zyklus
+unsigned long lastTempRequest = 0;
+const int tempConversionDelay = 800; // Muss > 750ms für 12-bit DS18B20 sein
+float currentTempMotor = 0.0;
+float currentTempESC = 0.0;
+
+// RPM Zähler
 volatile unsigned int pulseCount = 0;
-unsigned long lastTime = 0;
-const int samplingInterval = 500; // Datenerfassung alle 500ms (2 Hz)
 int currentRPM = 0;
 
-// --- Dateisystem ---
-File dataFile;
 const char* fileName = "/telemetry.csv";
 
 // --- Interrupt Service Routine (ISR) ---
-// Wird hardwarenah ausgelöst, sobald der Magnet den Sensor passiert
 void IRAM_ATTR countPulse() {
   pulseCount++;
+}
+
+// --- Webserver Routinen ---
+void handleRoot() {
+  String html = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'>";
+  html += "<title>RC Telemetrie Dashboard</title><style>body{font-family:sans-serif; text-align:center; padding:50px;}";
+  html += "a{background-color:#0056b3; color:white; padding:15px 25px; text-decoration:none; font-size:20px; border-radius:5px;}</style></head><body>";
+  html += "<h1>RC Telemetrie</h1>";
+  html += "<p>Lade hier deine aufgezeichneten Daten herunter:</p><br>";
+  html += "<a href=\"/download\">CSV-Datei Herunterladen</a>";
+  html += "</body></html>";
+  server.send(200, "text/html", html);
+}
+
+void handleDownload() {
+  File downloadFile = SD.open(fileName, FILE_READ);
+  if (!downloadFile) {
+    server.send(404, "text/plain", "Datei nicht gefunden.");
+    return;
+  }
+  server.sendHeader("Content-Type", "text/csv");
+  server.sendHeader("Content-Disposition", "attachment; filename=telemetry.csv");
+  server.sendHeader("Connection", "close");
+  
+  server.streamFile(downloadFile, "text/csv");
+  downloadFile.close();
 }
 
 void setup() {
   Serial.begin(115200);
 
-  // 1. Sensoren initialisieren
+  // WLAN & Webserver starten
+  WiFi.softAP(ssid, password);
+  server.on("/", handleRoot);
+  server.on("/download", HTTP_GET, handleDownload);
+  server.begin();
+
+  // Sensoren initialisieren
   sensors.begin();
+  
+  // WICHTIG: Den blockierenden Modus deaktivieren!
+  sensors.setWaitForConversion(false); 
+  
+  // Ersten Temperatur-Request anstoßen
+  sensors.requestTemperatures();
+  lastTempRequest = millis();
+
   pinMode(HALL_PIN, INPUT_PULLUP);
-  // Interrupt an den Hall-Sensor Pin binden
   attachInterrupt(digitalPinToInterrupt(HALL_PIN), countPulse, FALLING);
 
-  // 2. SD-Karte initialisieren
-  Serial.print("Initialisiere SD-Karte...");
-  if (!SD.begin(SD_CS_PIN)) {
-    Serial.println(" Fehlgeschlagen! Überprüfe die Verkabelung.");
-    return; // Stoppt hier, falls keine SD-Karte gefunden wird
-  }
-  Serial.println(" Erfolgreich.");
-
-  // 3. CSV-Header schreiben (Das Daten-Schema)
-  dataFile = SD.open(fileName, FILE_APPEND);
-  if (dataFile) {
-    dataFile.println("Timestamp_ms,Temp_Motor_C,Temp_ESC_C,RPM");
-    dataFile.close();
-    Serial.println("Pipeline bereit. Header geschrieben.");
-  } else {
-    Serial.println("Fehler beim Erstellen der CSV-Datei.");
+  // SD-Karte initialisieren
+  if (SD.begin(SD_CS_PIN)) {
+    File dataFile = SD.open(fileName, FILE_APPEND);
+    if (dataFile) {
+      dataFile.println("\n--- NEUE FAHRT ---");
+      dataFile.println("Timestamp_ms,Temp_Motor_C,Temp_ESC_C,RPM");
+      dataFile.close();
+    }
   }
 }
 
 void loop() {
-  unsigned long currentTime = millis();
+  // 1. Webserver bedienen (darf nicht blockiert werden!)
+  server.handleClient();
 
-  // Trigger für den nächsten Ingestion-Zyklus
-  if (currentTime - lastTime >= samplingInterval) {
+  unsigned long currentMillis = millis();
+
+  // 2. Asynchroner Temperatur-Update-Zyklus
+  if (currentMillis - lastTempRequest >= tempConversionDelay) {
+    // Werte abholen (dauert jetzt nur Mikrosekunden, da die Konvertierung fertig ist)
+    currentTempMotor = sensors.getTempCByIndex(0);
+    currentTempESC = sensors.getTempCByIndex(1);
+
+    // Direkt die nächste Konvertierung beim Sensor in Auftrag geben
+    sensors.requestTemperatures();
+    lastTempRequest = currentMillis;
+  }
+
+  // 3. Data Ingestion Pipeline (Alle 200ms = 5 Hz)
+  if (currentMillis - lastIngestionTime >= ingestionInterval) {
     
-    // 1. Interrupts kurz pausieren, um den Zählerstand sicher zu kopieren
+    // RPM sicher auslesen und zurücksetzen
     noInterrupts();
     unsigned int currentPulses = pulseCount;
-    pulseCount = 0; // Zähler für das nächste Intervall zurücksetzen
+    pulseCount = 0; 
     interrupts();
 
-    // 2. RPM berechnen: (Impulse pro Intervall) * (Intervalle pro Minute)
-    // Bei 500ms Intervall = 120 Intervalle pro Minute
-    currentRPM = currentPulses * (60000 / samplingInterval);
+    // RPM hochrechnen
+    currentRPM = currentPulses * (60000 / ingestionInterval);
 
-    // 3. Temperaturen abfragen
-    sensors.requestTemperatures();
-    // Index 0 ist der erste gefundene Sensor auf dem Bus, Index 1 der zweite
-    float tempMotor = sensors.getTempCByIndex(0);
-    float tempESC = sensors.getTempCByIndex(1);
-
-    // 4. Payload formatieren (CSV-Zeile bauen)
-    String payload = String(currentTime) + "," +
-                     String(tempMotor) + "," +
-                     String(tempESC) + "," +
+    // Payload formatieren (nutzt die jeweils aktuellsten verfügbaren Temperaturwerte)
+    String payload = String(currentMillis) + "," +
+                     String(currentTempMotor) + "," +
+                     String(currentTempESC) + "," +
                      String(currentRPM);
 
-    // 5. Payload auf die SD-Karte schreiben (Storage)
-    dataFile = SD.open(fileName, FILE_APPEND);
+    // Auf SD-Karte schreiben
+    File dataFile = SD.open(fileName, FILE_APPEND);
     if (dataFile) {
       dataFile.println(payload);
       dataFile.close();
-      
-      // Zur Kontrolle auch auf dem Seriellen Monitor ausgeben
-      Serial.println(payload); 
-    } else {
-      Serial.println("Schreibfehler: Datei konnte nicht geöffnet werden.");
     }
-
-    lastTime = currentTime;
+    
+    lastIngestionTime = currentMillis;
   }
 }
