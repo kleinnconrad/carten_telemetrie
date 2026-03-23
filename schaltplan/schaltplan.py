@@ -33,7 +33,7 @@ def erstelle_schaltplan():
     dot.edge('R', 'T_MOT', label='Zieht "Data" auf High', arrowhead='none', style='dashed')
 
     # Rendern und speichern
-    dot.render('RC_Telemetrie_Schaltplan', format='png', view=True)
+    dot.render('RC_Telemetrie_Schaltplan', format='png', view=False)
     print("Schaltplan wurde als 'RC_Telemetrie_Schaltplan.png' erfolgreich generiert und geöffnet.")
 
 if __name__ == '__main__':
