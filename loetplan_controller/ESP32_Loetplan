@@ -1,0 +1,50 @@
+digraph Loetplan {
+	nodesep=1.0 rankdir=LR ranksep=2.5 splines=ortho
+	node [fontname=Helvetica fontsize=12 shape=none]
+	ESP [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD COLSPAN="2" BGCOLOR="#add8e6"><B>NodeMCU ESP32</B></TD></TR>
+      <TR><TD PORT="vin">VIN (5V Input)</TD><TD PORT="g23">GPIO 23</TD></TR>
+      <TR><TD PORT="3v3">3.3V (Output)</TD><TD PORT="g19">GPIO 19</TD></TR>
+      <TR><TD PORT="gnd">GND (Masse)</TD><TD PORT="g18">GPIO 18</TD></TR>
+      <TR><TD PORT="g4">GPIO 4</TD><TD PORT="g5">GPIO 5</TD></TR>
+      <TR><TD PORT="g2">GPIO 2</TD><TD BGCOLOR="#f0f0f0"><I>Weitere Pins...</I></TD></TR>
+    </TABLE>>]
+	SD [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="2" BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (3.3V)</TD><TD PORT="cs">CS</TD></TR>
+      <TR><TD PORT="gnd">GND</TD><TD PORT="sck">SCK</TD></TR>
+      <TR><TD PORT="miso">MISO</TD><TD PORT="mosi">MOSI</TD></TR>
+    </TABLE>>]
+	TEMP [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#ffffe0"><B>DS18B20 (Motor & ESC)</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (Rot)</TD><TD PORT="gnd">GND (Schwarz)</TD><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+    </TABLE>>]
+	HALL [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (Pin 1)</TD><TD PORT="gnd">GND (Pin 2)</TD><TD PORT="out">OUT (Pin 3)</TD></TR>
+    </TABLE>>]
+	RC [label="RC-Empfänger
+(5V / 6V BEC)" fillcolor="#90ee90" shape=box style=filled]
+	RES [label="4.7 kΩ
+Widerstand" fillcolor=white shape=box style=filled]
+	RC -> ESP:vin [label=" Plus (Rot)" color=red penwidth=2]
+	RC -> ESP:gnd [label=" Minus (Schwarz)" color=black penwidth=2]
+	ESP:"3v3" -> SD:vcc [color=red]
+	ESP:"3v3" -> TEMP:vcc [color=red]
+	ESP:"3v3" -> HALL:vcc [color=red]
+	ESP:gnd -> SD:gnd [color=black]
+	ESP:gnd -> TEMP:gnd [color=black]
+	ESP:gnd -> HALL:gnd [color=black]
+	ESP:g23 -> SD:mosi [label=" MOSI" color=blue]
+	ESP:g19 -> SD:miso [label=" MISO" color=blue]
+	ESP:g18 -> SD:sck [label=" SCK" color=blue]
+	ESP:g5 -> SD:cs [label=" CS" color=blue]
+	ESP:g4 -> TEMP:dq [label=" 1-Wire Data" color=orange]
+	ESP:g2 -> HALL:out [label=" RPM Interrupt" color=purple]
+	ESP:"3v3" -> RES [label=" Lötbrücke 1" color=red style=dashed]
+	RES -> ESP:g4 [label=" Lötbrücke 2" color=orange style=dashed]
+}
