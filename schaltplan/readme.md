@@ -2,6 +2,8 @@
 
 Dieses System erfasst Telemetriedaten in einem RC-Fahrzeug. Die Architektur ist auf Robustheit und asynchrone Datenerfassung ausgelegt, um Blockaden durch langsame Sensor-Auslesezeiten (DS18B20) oder SD-Karten-Schreibzyklen zu kompensieren.
 
+![schaltplan](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/RC_Telemetrie_Schaltplan_Pro.png)
+
 ## 1. System-Architektur & Timing
 
 * **Sampling-Rate:** Das System sampelt mit 2 Hz (alle 500 ms).
