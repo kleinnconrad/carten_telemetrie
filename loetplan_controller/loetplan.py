@@ -1,98 +1,107 @@
 import graphviz
 
-def erstelle_detaillierten_loetplan():
+def erstelle_sauberen_schaltplan():
     # Setup des Graphen: 'ortho' sorgt für eckige, kabel-ähnliche Linien
-    dot = graphviz.Digraph('Loetplan', filename='RC_Telemetry_ESP32_Detaillierter_Loetplan', format='png')
-    dot.attr(rankdir='LR', splines='ortho', nodesep='1.5', ranksep='2.5')
+    # splines='polyline' minimiert Überkreuzungen
+    dot = graphviz.Digraph('Sauberer_Schaltplan', filename='Schaltplan_Detailliert', format='png')
+    dot.attr(rankdir='LR', splines='polyline', nodesep='1.0', ranksep='2.5')
     dot.attr('node', shape='none', fontname='Helvetica', fontsize='12')
 
-    # 1. ESP32 als detaillierte Tabelle (Physisches Pinout)
-    # Die Pins sind so angeordnet, wie sie auf dem NodeMCU 32S DevKit V1 physisch liegen.
+    # Physisches Pin-Layout für NodeMCU ESP32 (DevKit V1)
     esp32_html = '''<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
-      <TR><TD COLSPAN="2" BGCOLOR="#add8e6"><B>NodeMCU ESP32 (DevKit V1)</B></TD></TR>
-      <TR><TD PORT="vin">VIN (5V/6V)</TD><TD PORT="3v3">3.3V (Output)</TD></TR>
-      <TR><TD PORT="gnd1">GND</TD><TD PORT="gnd2">GND</TD></TR>
-      <TR><TD PORT="g13">D13</TD><TD PORT="g23">D23</TD></TR>
-      <TR><TD PORT="g12">D12</TD><TD PORT="g22">D22</TD></TR>
-      <TR><TD PORT="g14">D14</TD><TD PORT="g21">D21</TD></TR>
-      <TR><TD PORT="g27">D27</TD><TD PORT="tx0">TX0</TD></TR>
-      <TR><TD PORT="g26">D26</TD><TD PORT="rx0">RX0</TD></TR>
-      <TR><TD PORT="g25">D25</TD><TD PORT="g19">D19</TD></TR>
-      <TR><TD PORT="g33">D33</TD><TD PORT="g18">D18</TD></TR>
-      <TR><TD PORT="g32">D32</TD><TD PORT="g5">D5</TD></TR>
-      <TR><TD PORT="g35">D35</TD><TD PORT="g17">D17</TD></TR>
-      <TR><TD PORT="g34">D34</TD><TD PORT="g16">D16</TD></TR>
-      <TR><TD PORT="vn">VN</TD><TD PORT="g4">D4</TD></TR>
-      <TR><TD PORT="vp">VP</TD><TD PORT="g2">D2</TD></TR>
-      <TR><TD PORT="en">EN</TD><TD PORT="g15">D15</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#add8e6"><B>NodeMCU ESP32</B> (Zentraleinheit)</TD></TR>
+      <TR><TD BGCOLOR="#d3d3d3">Pin (Funktion)</TD><TD BGCOLOR="#d3d3d3">ESP32 Pin</TD><TD BGCOLOR="#d3d3d3">Ziel</TD></TR>
+      
+      <TR><TD PORT="vin">VIN (5V Input)</TD><TD>1</TD><TD PORT="vin_t">RC-Empfänger</TD></TR>
+      <TR><TD PORT="3v3">3.3V (Output)</TD><TD>2</TD><TD PORT="3v3_t">Sensoren & SD</TD></TR>
+      <TR><TD PORT="gnd">GND (Masse)</TD><TD>3</TD><TD PORT="gnd_t">Gemeinsame Masse</TD></TR>
+
+      <TR><TD PORT="g23">GPIO 23 (SPI MOSI)</TD><TD>15</TD><TD PORT="g23_t">SD: MOSI</TD></TR>
+      <TR><TD PORT="g19">GPIO 19 (SPI MISO)</TD><TD>13</TD><TD PORT="g19_t">SD: MISO</TD></TR>
+      <TR><TD PORT="g18">GPIO 18 (SPI CLK)</TD><TD>12</TD><TD PORT="g18_t">SD: SCK</TD></TR>
+      <TR><TD PORT="g5">GPIO 5 (SPI CS)</TD><TD>10</TD><TD PORT="g5_t">SD: CS</TD></TR>
+
+      <TR><TD PORT="g4">GPIO 4 (1-Wire Temp)</TD><TD>9</TD><TD PORT="g4_t">Temp-Sensoren</TD></TR>
+      <TR><TD PORT="g2">GPIO 2 (RPM Interrupt)</TD><TD>8</TD><TD PORT="g2_t">Hall-Sensor</TD></TR>
+      
+      <TR><TD BGCOLOR="#f0f0f0"><I>Weitere Pins...</I></TD><TD BGCOLOR="#f0f0f0">...</TD><TD BGCOLOR="#f0f0f0">...</TD></TR>
     </TABLE>>'''
     dot.node('ESP', label=esp32_html)
 
-    # 2. MicroSD Modul
+    # Detailliertes Pinout für MicroSD Modul
     sd_html = '''<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
       <TR><TD COLSPAN="2" BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
-      <TR><TD PORT="vcc">VCC (3.3V)</TD><TD PORT="cs">CS</TD></TR>
-      <TR><TD PORT="gnd">GND</TD><TD PORT="sck">SCK</TD></TR>
-      <TR><TD PORT="miso">MISO</TD><TD PORT="mosi">MOSI</TD></TR>
+      <TR><TD BGCOLOR="#f0f0f0">Sensor Pin</TD><TD BGCOLOR="#f0f0f0">Zweck</TD></TR>
+      <TR><TD PORT="vcc">VCC</TD><TD>An ESP: 3.3V</TD></TR>
+      <TR><TD PORT="gnd">GND</TD><TD>An ESP: GND</TD></TR>
+      <TR><TD PORT="miso">MISO</TD><TD>An ESP: GPIO 19</TD></TR>
+      <TR><TD PORT="mosi">MOSI</TD><TD>An ESP: GPIO 23</TD></TR>
+      <TR><TD PORT="sck">SCK</TD><TD>An ESP: GPIO 18</TD></TR>
+      <TR><TD PORT="cs">CS</TD><TD>An ESP: GPIO 5</TD></TR>
     </TABLE>>'''
     dot.node('SD', label=sd_html)
 
-    # 3. Temperatursensoren (DS18B20)
+    # Physisches Pinout für DS18B20 Temperatursensoren (Paralleler Bus)
     temp_html = '''<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="3" BGCOLOR="#ffffe0"><B>DS18B20 (Motor & ESC)</B></TD></TR>
-      <TR><TD PORT="vcc">VDD (Rot)</TD><TD PORT="gnd">GND (Schwarz)</TD><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#ffffe0"><B>DS18B20 Temperatur</B> (Motor & ESC)</TD></TR>
+      <TR><TD BGCOLOR="#f0f0f0">Pin</TD><TD BGCOLOR="#f0f0f0">Kabel-Farbe</TD><TD BGCOLOR="#f0f0f0">Zweck</TD></TR>
+      <TR><TD PORT="vcc">VDD</TD><TD>Rot</TD><TD>An ESP: 3.3V</TD></TR>
+      <TR><TD PORT="gnd">GND</TD><TD>Schwarz</TD><TD>An ESP: GND</TD></TR>
+      <TR><TD PORT="dq">Data</TD><TD>Gelb / Blau</TD><TD>An ESP: GPIO 4</TD></TR>
     </TABLE>>'''
     dot.node('TEMP', label=temp_html)
 
-    # 4. Hall Sensor (RPM)
+    # Physisches Pinout für A3144 Hall-Sensor (RPM)
     hall_html = '''<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="3" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
-      <TR><TD PORT="vcc">VCC (Pin 1)</TD><TD PORT="gnd">GND (Pin 2)</TD><TD PORT="out">OUT (Pin 3)</TD></TR>
+      <TR><TD COLSPAN="3" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B> (RPM)</TD></TR>
+      <TR><TD BGCOLOR="#f0f0f0">Pin #</TD><TD BGCOLOR="#f0f0f0">Pin-Bezeichnung</TD><TD BGCOLOR="#f0f0f0">Zweck</TD></TR>
+      <TR><TD PORT="vcc">1</TD><TD>VCC (Power)</TD><TD>An ESP: 3.3V</TD></TR>
+      <TR><TD PORT="gnd">2</TD><TD>GND (Masse)</TD><TD>An ESP: GND</TD></TR>
+      <TR><TD PORT="out">3</TD><TD>DOUT (Signal)</TD><TD>An ESP: GPIO 2</TD></TR>
     </TABLE>>'''
     dot.node('HALL', label=hall_html)
 
-    # 5. Hilfs-Bauteile
-    dot.node('RC', shape='box', style='filled', fillcolor='#90ee90', label='RC-Empfänger\n(5V BEC Power)')
-    dot.node('RES', shape='box', style='filled', fillcolor='white', label='4.7 kΩ\nPull-Up Widerstand')
+    # Gemeinsame Masse und 3.3V Power visualisieren (Tipp von Leif umgesetzt)
+    # Die Sensoren teilen sich diese Leitungen, d.h. sie werden parallel angeschlossen.
+    dot.node('RC', shape='box', style='filled', fillcolor='#90ee90', label='RC-Empfänger\n(5V Power für ESP32)')
+    dot.node('Widerstand', shape='box', style='filled', fillcolor='white', label='4.7 kΩ\nPull-Up Widerstand')
 
-    # --- VERKABELUNG (LÖT-VERBINDUNGEN) ---
+    # --- VERKABELUNG ---
 
-    # Stromversorgung Zentrale (VIN an VIN, GND an GND1)
-    dot.edge('RC', 'ESP:vin', color='red', penwidth='2', label=' Plus (Rot)')
-    dot.edge('RC', 'ESP:gnd1', color='black', penwidth='2', label=' Minus (Schwarz)')
+    # Stromversorgung Zentrale (RC an ESP32)
+    dot.edge('RC', 'ESP:vin', color='red', penwidth='2', label=' Plus (5V)')
+    dot.edge('RC', 'ESP:gnd', color='black', penwidth='2', label=' Minus (Masse)')
 
-    # Stromversorgung Sensoren & SD (Alle an 3.3V und GND2)
-    # Tipp: Verwende eine kleine Platine, um diese Kabel zusammenzuführen, anstatt zu versuchen, multiple dicke Kabel an einen winzigen Pin zu löten.
+    # Stromversorgung Sensoren & SD (Alle an denselben 3.3V / GND Pins)
     dot.edge('ESP:3v3', 'SD:vcc', color='red')
     dot.edge('ESP:3v3', 'TEMP:vcc', color='red')
     dot.edge('ESP:3v3', 'HALL:vcc', color='red')
+    dot.edge('ESP:3v3', 'Widerstand', color='red', style='dashed', label=' Pull-Up Power')
     
-    dot.edge('ESP:gnd2', 'SD:gnd', color='black')
-    dot.edge('ESP:gnd2', 'TEMP:gnd', color='black')
-    dot.edge('ESP:gnd2', 'HALL:gnd', color='black')
+    dot.edge('ESP:gnd', 'SD:gnd', color='black')
+    dot.edge('ESP:gnd', 'TEMP:gnd', color='black')
+    dot.edge('ESP:gnd', 'HALL:gnd', color='black')
 
-    # SPI-Bus (MicroSD) - Entspricht C++ Code Pin-Definition
-    dot.edge('ESP:g23', 'SD:mosi', color='blue', label=' SPI MOSI (-> D23)')
-    dot.edge('ESP:g19', 'SD:miso', color='blue', label=' SPI MISO (-> D19)')
-    dot.edge('ESP:g18', 'SD:sck', color='blue', label=' SPI CLK (-> D18)')
-    dot.edge('ESP:g5',  'SD:cs', color='blue', label=' SPI CS (-> D5, C++ CS)')
+    # SPI-Bus (MicroSD)
+    dot.edge('ESP:g23', 'SD:mosi', color='blue', label=' MOSI')
+    dot.edge('ESP:g19', 'SD:miso', color='blue', label=' MISO')
+    dot.edge('ESP:g18', 'SD:sck', color='blue', label=' SCK')
+    dot.edge('ESP:g5',  'SD:cs', color='blue', label=' CS')
 
     # Sensor-Datenleitungen
-    dot.edge('ESP:g4', 'TEMP:dq', color='orange', label=' 1-Wire DQ (-> D4, C++ Temp)')
-    dot.edge('ESP:g2', 'HALL:out', color='purple', label=' RPM (-> D2, C++ Hall)')
+    dot.edge('ESP:g4', 'TEMP:dq', color='orange', label=' 1-Wire DQ')
+    dot.edge('ESP:g2', 'HALL:out', color='purple', label=' RPM (Interrupt)')
 
-    # Der Pull-Up Widerstand (MUSS zwischen 3.3V und Data (GPIO 4) gelötet werden)
-    # Dies ist am besten direkt auf der kleinen Sensor-Anschlussplatine zu lösen.
-    dot.edge('ESP:3v3', 'RES', color='red', style='dashed', label=' Lötbrücke 1')
-    dot.edge('RES', 'ESP:g4', color='orange', style='dashed', label=' Lötbrücke 2')
+    # Der kritische Pull-Up Widerstand für 1-Wire
+    dot.edge('Widerstand', 'ESP:g4', color='orange', style='dashed', label=' Zieht "Data" auf High')
 
-    # Rendern ohne das Bild in Codespaces öffnen zu wollen
+    # Rendern
     dot.render(view=False)
-    print("Detaillierter Lötplan generiert. Bitte öffne 'RC_Telemetry_ESP32_Detaillierter_Loetplan.png' im Dateibaum.")
+    print("Professioneller, detaillierter Schaltplan generiert. Bitte öffne die PNG-Datei.")
 
 if __name__ == '__main__':
-    erstelle_detaillierten_loetplan()
+    erstelle_sauberen_schaltplan()
