@@ -1,0 +1,66 @@
+digraph Schaltplan {
+	nodesep=1.2 rankdir=LR ranksep=3.0 splines=ortho
+	node [fontname=Helvetica fontsize=12 shape=none]
+	ESP [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD COLSPAN="3" BGCOLOR="#add8e6"><B>NodeMCU ESP32</B> (Zentrale)</TD></TR>
+      <TR><TD BGCOLOR="#d3d3d3"><B>Linke Pins</B></TD><TD BGCOLOR="#e0e0e0" ROWSPAN="8"> ESP32 <br/> Core </TD><TD BGCOLOR="#d3d3d3"><B>Rechte Pins</B></TD></TR>
+      <TR><TD PORT="vin">VIN (5V In)</TD><TD PORT="3v3_r">3.3V (Out)</TD></TR>
+      <TR><TD PORT="3v3_l">3.3V (Out)</TD><TD PORT="gnd_r">GND (Masse)</TD></TR>
+      <TR><TD PORT="gnd_l">GND (Masse)</TD><TD PORT="g4">GPIO 4 (1-Wire)</TD></TR>
+      <TR><TD PORT="g23">GPIO 23 (MOSI)</TD><TD PORT="g2">GPIO 2 (Hall Interrupt)</TD></TR>
+      <TR><TD PORT="g19">GPIO 19 (MISO)</TD><TD>---</TD></TR>
+      <TR><TD PORT="g18">GPIO 18 (SCK)</TD><TD>---</TD></TR>
+      <TR><TD PORT="g5">GPIO 5 (CS)</TD><TD>---</TD></TR>
+    </TABLE>>]
+	RC [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="1" BGCOLOR="#90ee90"><B>RC-Empfänger</B></TD></TR>
+      <TR><TD PORT="vin">5V Power</TD></TR>
+      <TR><TD PORT="gnd">Masse</TD></TR>
+    </TABLE>>]
+	SD [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="1" BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (3.3V)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="miso">MISO</TD></TR>
+      <TR><TD PORT="mosi">MOSI</TD></TR>
+      <TR><TD PORT="sck">SCK</TD></TR>
+      <TR><TD PORT="cs">CS</TD></TR>
+    </TABLE>>]
+	TEMP [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="1" BGCOLOR="#ffffe0"><B>DS18B20 Temp.</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (Rot)</TD></TR>
+      <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
+      <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+    </TABLE>>]
+	HALL [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="1" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
+      <TR><TD PORT="vcc">1: VCC (Power)</TD></TR>
+      <TR><TD PORT="gnd">2: GND (Masse)</TD></TR>
+      <TR><TD PORT="out">3: DOUT (Signal)</TD></TR>
+    </TABLE>>]
+	RES [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="white" PORT="p">4.7 kΩ Pull-Up</TD></TR>
+    </TABLE>>]
+	RC:vin:e -> ESP:vin:w [color=red dir=none penwidth=2]
+	RC:gnd:e -> ESP:gnd_l:w [color=black dir=none penwidth=2]
+	SD:vcc:e -> ESP:"3v3_l":w [color=red dir=none]
+	SD:gnd:e -> ESP:gnd_l:w [color=black dir=none]
+	SD:mosi:e -> ESP:g23:w [color=blue dir=none]
+	SD:miso:e -> ESP:g19:w [color=blue dir=none]
+	SD:sck:e -> ESP:g18:w [color=blue dir=none]
+	SD:cs:e -> ESP:g5:w [color=blue dir=none]
+	ESP:"3v3_r":e -> TEMP:vcc:w [color=red dir=none]
+	ESP:gnd_r:e -> TEMP:gnd:w [color=black dir=none]
+	ESP:g4:e -> TEMP:dq:w [color=orange dir=none]
+	ESP:"3v3_r":e -> HALL:vcc:w [color=red dir=none]
+	ESP:gnd_r:e -> HALL:gnd:w [color=black dir=none]
+	ESP:g2:e -> HALL:out:w [color=purple dir=none]
+	ESP:"3v3_r":e -> RES:p:w [color=red dir=none style=dashed]
+	RES:p:e -> TEMP:dq:e [color=orange dir=none style=dashed]
+}
