@@ -28,13 +28,23 @@ Alle Komponenten teilen sich eine gemeinsame Masse (**GND**).
 
 Um den visuellen Schaltplan als PNG zu generieren, nutzen wir Python und das Tool `uv`, um die Abhängigkeit (`graphviz`) nicht global installieren zu müssen.
 
-**Voraussetzungen:**
-1. Lade `graphviz` herunter und füge es zum System-PATH hinzu: [https://graphviz.org/download/](https://graphviz.org/download/)
-2. Installiere `uv` (z.B. in der Powershell via `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"` oder per Winget: `winget install --id=astral-sh.uv  -e`).
+**graphviz:**
 
-**Skript ausführen:**
-Führe den folgenden Befehl im Terminal aus. `uv` lädt `graphviz` temporär herunter und führt das Skript isoliert aus:
-`uv run --with graphviz schaltplan.py`
+1. System-Abhängigkeit installieren:
+   ```bash
+   sudo apk add graphviz
+   ```
+
+2. Tool `uv` herunterladen und Pfad laden:
+   ```bash
+   curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+   source $HOME/.local/bin/env
+   ```
+
+3. Skript ausführen:
+   ```bash
+   uv run --with graphviz schaltplan.py
+   ```
 
 ## 4. Betrieb
 Nach dem Einschalten des Fahrzeugs startet der ESP32 automatisch die Ingestion Pipeline. 
