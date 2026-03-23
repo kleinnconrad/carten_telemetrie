@@ -4,10 +4,10 @@ digraph Sauberer_Schaltplan {
 	ESP [label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
       <TR><TD COLSPAN="3" BGCOLOR="#add8e6"><B>NodeMCU ESP32</B> (Zentraleinheit)</TD></TR>
-      <TR><TD BGCOLOR="#d3d3d3">Pin (Funktion)</TD><TD BGCOLOR="#d3d3d3">ESP32 Pin</TD><TD BGCOLOR="#d3d3d3">Ziel</TD></TR>
+      <TR><TD BGCOLOR="#d3d3d3">Pin-Name</TD><TD BGCOLOR="#d3d3d3">ESP32 GPIO</TD><TD BGCOLOR="#d3d3d3">Ziel</TD></TR>
       
-      <TR><TD PORT="vin">VIN (5V Input)</TD><TD>1</TD><TD PORT="vin_t">RC-Empfänger</TD></TR>
-      <TR><TD PORT="3v3">3.3V (Output)</TD><TD>2</TD><TD PORT="3v3_t">Sensoren & SD</TD></TR>
+      <TR><TD PORT="vin">VIN (5V Input)</TD><TD>1 (Oben Links)</TD><TD PORT="vin_t">RC-Empfänger</TD></TR>
+      <TR><TD PORT="3v3">3.3V (Output)</TD><TD>2 (Oben Rechts)</TD><TD PORT="3v3_t">Sensoren & SD</TD></TR>
       <TR><TD PORT="gnd">GND (Masse)</TD><TD>3</TD><TD PORT="gnd_t">Gemeinsame Masse</TD></TR>
 
       <TR><TD PORT="g23">GPIO 23 (SPI MOSI)</TD><TD>15</TD><TD PORT="g23_t">SD: MOSI</TD></TR>
@@ -43,9 +43,9 @@ digraph Sauberer_Schaltplan {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
       <TR><TD COLSPAN="3" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B> (RPM)</TD></TR>
       <TR><TD BGCOLOR="#f0f0f0">Pin #</TD><TD BGCOLOR="#f0f0f0">Pin-Bezeichnung</TD><TD BGCOLOR="#f0f0f0">Zweck</TD></TR>
-      <TR><TD PORT="vcc">1</TD><TD>VCC (Power)</TD><TD>An ESP: 3.3V</TD></TR>
-      <TR><TD PORT="gnd">2</TD><TD>GND (Masse)</TD><TD>An ESP: GND</TD></TR>
-      <TR><TD PORT="out">3</TD><TD>DOUT (Signal)</TD><TD>An ESP: GPIO 2</TD></TR>
+      <TR><TD PORT="vcc">1 (Links)</TD><TD>VCC (Power)</TD><TD>An ESP: 3.3V</TD></TR>
+      <TR><TD PORT="gnd">2 (Mitte)</TD><TD>GND (Masse)</TD><TD>An ESP: GND</TD></TR>
+      <TR><TD PORT="out">3 (Rechts)</TD><TD>DOUT (Signal)</TD><TD>An ESP: GPIO 2</TD></TR>
     </TABLE>>]
 	RC [label="RC-Empfänger
 (5V Power für ESP32)" fillcolor="#90ee90" shape=box style=filled]
