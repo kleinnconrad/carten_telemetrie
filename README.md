@@ -1,5 +1,5 @@
 # carten_telemetrie
-Entwicklung einer Telemetrie Lösung für einen Carten T410R, um die Temperatur von Motor und ESC zu messen. Ebenfalls soll die Drehzahl der Kardanwelle gemessen werden.
+Entwicklung einer Telemetrie Lösung für einen Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/kleinnconrad/RC100), um die Temperatur von Motor und ESC zu messen. Ebenfalls soll die Drehzahl der Kardanwelle gemessen werden.
 
 # Bauanleitung: DIY RC-Telemetrie-System (ESP32)
 
