@@ -1,5 +1,5 @@
 digraph Schaltplan {
-	nodesep=1.2 rankdir=LR ranksep=3.0 splines=ortho
+	nodesep=0.8 rankdir=LR ranksep=3.5 splines=polyline
 	node [fontname=Helvetica fontsize=12 shape=none]
 	ESP [label=<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
@@ -13,54 +13,64 @@ digraph Schaltplan {
       <TR><TD PORT="g18">GPIO 18 (SCK)</TD><TD>---</TD></TR>
       <TR><TD PORT="g5">GPIO 5 (CS)</TD><TD>---</TD></TR>
     </TABLE>>]
-	RC [label=<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="1" BGCOLOR="#90ee90"><B>RC-Empfänger</B></TD></TR>
+	{
+		rank=same
+		RC [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#90ee90"><B>RC-Empfänger</B></TD></TR>
       <TR><TD PORT="vin">5V Power</TD></TR>
       <TR><TD PORT="gnd">Masse</TD></TR>
     </TABLE>>]
-	SD [label=<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="1" BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
+		SD [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
       <TR><TD PORT="vcc">VCC (3.3V)</TD></TR>
       <TR><TD PORT="gnd">GND</TD></TR>
-      <TR><TD PORT="miso">MISO</TD></TR>
       <TR><TD PORT="mosi">MOSI</TD></TR>
+      <TR><TD PORT="miso">MISO</TD></TR>
       <TR><TD PORT="sck">SCK</TD></TR>
       <TR><TD PORT="cs">CS</TD></TR>
     </TABLE>>]
-	TEMP [label=<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="1" BGCOLOR="#ffffe0"><B>DS18B20 Temp.</B></TD></TR>
+		RC -> SD [style=invis]
+	}
+	{
+		rank=same
+		TEMP [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 Temp.</B></TD></TR>
       <TR><TD PORT="vcc">VDD (Rot)</TD></TR>
       <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
       <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
     </TABLE>>]
-	HALL [label=<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="1" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
+		HALL [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
       <TR><TD PORT="vcc">1: VCC (Power)</TD></TR>
       <TR><TD PORT="gnd">2: GND (Masse)</TD></TR>
       <TR><TD PORT="out">3: DOUT (Signal)</TD></TR>
     </TABLE>>]
-	RES [label=<
+		RES [label=<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD BGCOLOR="white" PORT="p">4.7 kΩ Pull-Up</TD></TR>
+      <TR><TD COLSPAN="2" BGCOLOR="white"><B>4.7 kΩ Pull-Up</B></TD></TR>
+      <TR><TD PORT="p1">Zu 3.3V</TD><TD PORT="p2">Zu GPIO 4</TD></TR>
     </TABLE>>]
+		TEMP -> HALL [style=invis]
+		HALL -> RES [style=invis]
+	}
 	RC:vin:e -> ESP:vin:w [color=red dir=none penwidth=2]
 	RC:gnd:e -> ESP:gnd_l:w [color=black dir=none penwidth=2]
-	SD:vcc:e -> ESP:"3v3_l":w [color=red dir=none]
-	SD:gnd:e -> ESP:gnd_l:w [color=black dir=none]
-	SD:mosi:e -> ESP:g23:w [color=blue dir=none]
-	SD:miso:e -> ESP:g19:w [color=blue dir=none]
-	SD:sck:e -> ESP:g18:w [color=blue dir=none]
-	SD:cs:e -> ESP:g5:w [color=blue dir=none]
-	ESP:"3v3_r":e -> TEMP:vcc:w [color=red dir=none]
-	ESP:gnd_r:e -> TEMP:gnd:w [color=black dir=none]
-	ESP:g4:e -> TEMP:dq:w [color=orange dir=none]
-	ESP:"3v3_r":e -> HALL:vcc:w [color=red dir=none]
-	ESP:gnd_r:e -> HALL:gnd:w [color=black dir=none]
-	ESP:g2:e -> HALL:out:w [color=purple dir=none]
-	ESP:"3v3_r":e -> RES:p:w [color=red dir=none style=dashed]
-	RES:p:e -> TEMP:dq:e [color=orange dir=none style=dashed]
+	SD:vcc:e -> ESP:"3v3_l":w [color=red dir=none penwidth=2]
+	SD:gnd:e -> ESP:gnd_l:w [color=black dir=none penwidth=2]
+	SD:mosi:e -> ESP:g23:w [color=blue dir=none penwidth=2]
+	SD:miso:e -> ESP:g19:w [color=blue dir=none penwidth=2]
+	SD:sck:e -> ESP:g18:w [color=blue dir=none penwidth=2]
+	SD:cs:e -> ESP:g5:w [color=blue dir=none penwidth=2]
+	ESP:"3v3_r":e -> TEMP:vcc:w [color=red dir=none penwidth=2]
+	ESP:gnd_r:e -> TEMP:gnd:w [color=black dir=none penwidth=2]
+	ESP:g4:e -> TEMP:dq:w [color=orange dir=none penwidth=2]
+	ESP:"3v3_r":e -> HALL:vcc:w [color=red dir=none penwidth=2]
+	ESP:gnd_r:e -> HALL:gnd:w [color=black dir=none penwidth=2]
+	ESP:g2:e -> HALL:out:w [color=purple dir=none penwidth=2]
+	ESP:"3v3_r":e -> RES:p1:w [color=red dir=none penwidth=2 style=dashed]
+	RES:p2:w -> ESP:g4:e [color=orange dir=none penwidth=2 style=dashed]
 }
