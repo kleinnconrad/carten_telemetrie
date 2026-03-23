@@ -1,0 +1,60 @@
+digraph Loetplan {
+	nodesep=1.5 rankdir=LR ranksep=2.5 splines=ortho
+	node [fontname=Helvetica fontsize=12 shape=none]
+	ESP [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD COLSPAN="2" BGCOLOR="#add8e6"><B>NodeMCU ESP32 (DevKit V1)</B></TD></TR>
+      <TR><TD PORT="vin">VIN (5V/6V)</TD><TD PORT="3v3">3.3V (Output)</TD></TR>
+      <TR><TD PORT="gnd1">GND</TD><TD PORT="gnd2">GND</TD></TR>
+      <TR><TD PORT="g13">D13</TD><TD PORT="g23">D23</TD></TR>
+      <TR><TD PORT="g12">D12</TD><TD PORT="g22">D22</TD></TR>
+      <TR><TD PORT="g14">D14</TD><TD PORT="g21">D21</TD></TR>
+      <TR><TD PORT="g27">D27</TD><TD PORT="tx0">TX0</TD></TR>
+      <TR><TD PORT="g26">D26</TD><TD PORT="rx0">RX0</TD></TR>
+      <TR><TD PORT="g25">D25</TD><TD PORT="g19">D19</TD></TR>
+      <TR><TD PORT="g33">D33</TD><TD PORT="g18">D18</TD></TR>
+      <TR><TD PORT="g32">D32</TD><TD PORT="g5">D5</TD></TR>
+      <TR><TD PORT="g35">D35</TD><TD PORT="g17">D17</TD></TR>
+      <TR><TD PORT="g34">D34</TD><TD PORT="g16">D16</TD></TR>
+      <TR><TD PORT="vn">VN</TD><TD PORT="g4">D4</TD></TR>
+      <TR><TD PORT="vp">VP</TD><TD PORT="g2">D2</TD></TR>
+      <TR><TD PORT="en">EN</TD><TD PORT="g15">D15</TD></TR>
+    </TABLE>>]
+	SD [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="2" BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (3.3V)</TD><TD PORT="cs">CS</TD></TR>
+      <TR><TD PORT="gnd">GND</TD><TD PORT="sck">SCK</TD></TR>
+      <TR><TD PORT="miso">MISO</TD><TD PORT="mosi">MOSI</TD></TR>
+    </TABLE>>]
+	TEMP [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#ffffe0"><B>DS18B20 (Motor & ESC)</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (Rot)</TD><TD PORT="gnd">GND (Schwarz)</TD><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+    </TABLE>>]
+	HALL [label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="3" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (Pin 1)</TD><TD PORT="gnd">GND (Pin 2)</TD><TD PORT="out">OUT (Pin 3)</TD></TR>
+    </TABLE>>]
+	RC [label="RC-Empfänger
+(5V BEC Power)" fillcolor="#90ee90" shape=box style=filled]
+	RES [label="4.7 kΩ
+Pull-Up Widerstand" fillcolor=white shape=box style=filled]
+	RC -> ESP:vin [label=" Plus (Rot)" color=red penwidth=2]
+	RC -> ESP:gnd1 [label=" Minus (Schwarz)" color=black penwidth=2]
+	ESP:"3v3" -> SD:vcc [color=red]
+	ESP:"3v3" -> TEMP:vcc [color=red]
+	ESP:"3v3" -> HALL:vcc [color=red]
+	ESP:gnd2 -> SD:gnd [color=black]
+	ESP:gnd2 -> TEMP:gnd [color=black]
+	ESP:gnd2 -> HALL:gnd [color=black]
+	ESP:g23 -> SD:mosi [label=" SPI MOSI (-> D23)" color=blue]
+	ESP:g19 -> SD:miso [label=" SPI MISO (-> D19)" color=blue]
+	ESP:g18 -> SD:sck [label=" SPI CLK (-> D18)" color=blue]
+	ESP:g5 -> SD:cs [label=" SPI CS (-> D5, C++ CS)" color=blue]
+	ESP:g4 -> TEMP:dq [label=" 1-Wire DQ (-> D4, C++ Temp)" color=orange]
+	ESP:g2 -> HALL:out [label=" RPM (-> D2, C++ Hall)" color=purple]
+	ESP:"3v3" -> RES [label=" Lötbrücke 1" color=red style=dashed]
+	RES -> ESP:g4 [label=" Lötbrücke 2" color=orange style=dashed]
+}
