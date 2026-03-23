@@ -1,0 +1,4 @@
+- Download `graphviz`: [https://graphviz.org/download/](https://graphviz.org/download/)
+- Add `graphviz` to `PATH`
+- `pip install graphviz`
+- `python schaltplan.py`
