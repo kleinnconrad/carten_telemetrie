@@ -7,7 +7,7 @@ digraph Schaltplan {
       <TR><TD BGCOLOR="#d3d3d3"><B>Linke Pins</B></TD><TD BGCOLOR="#e0e0e0" ROWSPAN="8"> ESP32 <br/> Core </TD><TD BGCOLOR="#d3d3d3"><B>Rechte Pins</B></TD></TR>
       <TR><TD PORT="vin">VIN (5V In)</TD><TD PORT="3v3_r">3.3V (Out)</TD></TR>
       <TR><TD PORT="3v3_l">3.3V (Out)</TD><TD PORT="gnd_r">GND (Masse)</TD></TR>
-      <TR><TD PORT="gnd_l">GND (Masse)</TD><TD PORT="g4">GPIO 4 (1-Wire)</TD></TR>
+      <TR><TD PORT="gnd_l">GND (Masse)</TD><TD PORT="g4">GPIO 4 (1-Wire Bus)</TD></TR>
       <TR><TD PORT="g23">GPIO 23 (MOSI)</TD><TD PORT="g2">GPIO 2 (Hall Interrupt)</TD></TR>
       <TR><TD PORT="g19">GPIO 19 (MISO)</TD><TD>---</TD></TR>
       <TR><TD PORT="g18">GPIO 18 (SCK)</TD><TD>---</TD></TR>
@@ -35,9 +35,16 @@ digraph Schaltplan {
 	}
 	{
 		rank=same
-		TEMP [label=<
+		TEMP_MOT [label=<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
-      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 Temp.</B></TD></TR>
+      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 (Motor)</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (Rot)</TD></TR>
+      <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
+      <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+    </TABLE>>]
+		TEMP_ESC [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 (ESC)</B></TD></TR>
       <TR><TD PORT="vcc">VDD (Rot)</TD></TR>
       <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
       <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
@@ -54,7 +61,8 @@ digraph Schaltplan {
       <TR><TD COLSPAN="2" BGCOLOR="white"><B>4.7 kΩ Pull-Up</B></TD></TR>
       <TR><TD PORT="p1">Zu 3.3V</TD><TD PORT="p2">Zu GPIO 4</TD></TR>
     </TABLE>>]
-		TEMP -> HALL [style=invis]
+		TEMP_MOT -> TEMP_ESC [style=invis]
+		TEMP_ESC -> HALL [style=invis]
 		HALL -> RES [style=invis]
 	}
 	RC:vin:e -> ESP:vin:w [color=red dir=none penwidth=2]
@@ -65,9 +73,12 @@ digraph Schaltplan {
 	SD:miso:e -> ESP:g19:w [color=blue dir=none penwidth=2]
 	SD:sck:e -> ESP:g18:w [color=blue dir=none penwidth=2]
 	SD:cs:e -> ESP:g5:w [color=blue dir=none penwidth=2]
-	ESP:"3v3_r":e -> TEMP:vcc:w [color=red dir=none penwidth=2]
-	ESP:gnd_r:e -> TEMP:gnd:w [color=black dir=none penwidth=2]
-	ESP:g4:e -> TEMP:dq:w [color=orange dir=none penwidth=2]
+	ESP:"3v3_r":e -> TEMP_MOT:vcc:w [color=red dir=none penwidth=2]
+	ESP:gnd_r:e -> TEMP_MOT:gnd:w [color=black dir=none penwidth=2]
+	ESP:g4:e -> TEMP_MOT:dq:w [color=orange dir=none penwidth=2]
+	ESP:"3v3_r":e -> TEMP_ESC:vcc:w [color=red dir=none penwidth=2]
+	ESP:gnd_r:e -> TEMP_ESC:gnd:w [color=black dir=none penwidth=2]
+	ESP:g4:e -> TEMP_ESC:dq:w [color=orange dir=none penwidth=2]
 	ESP:"3v3_r":e -> HALL:vcc:w [color=red dir=none penwidth=2]
 	ESP:gnd_r:e -> HALL:gnd:w [color=black dir=none penwidth=2]
 	ESP:g2:e -> HALL:out:w [color=purple dir=none penwidth=2]
