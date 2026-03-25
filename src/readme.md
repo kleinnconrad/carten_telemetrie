@@ -2,13 +2,13 @@
 
 Diese Firmware verwandelt den ESP32 in einen autarken IoT-Edge-Client für RC-Fahrzeuge. Anstatt Daten nur lokal zu speichern, baut das System über ein LTE-Modem eine Verbindung zum Mobilfunknetz auf und streamt hochfrequente Sensordaten (GPS, Drehzahlen, Temperaturen) in Echtzeit über das MQTT-Protokoll an eine Cloud-Infrastruktur.
 
-## 🚀 Kern-Features
+## Kern-Features
 
 * **Non-Blocking Architecture:** Die Firmware ist extrem asynchron aufgebaut. Das Parsen von GPS-NMEA-Daten (UART) und das Warten auf Temperaturwandlungen (1-Wire) blockieren niemals den Main-Loop. Dadurch geht kein einziger RPM-Interrupt verloren.
 * **Hardware UART Routing:** Das System nutzt die dedizierten Hardware-Serial-Schnittstellen des ESP32, um parallel mit dem LTE-Modem (`UART 1`) und dem GPS-Modul (`UART 2`) zu kommunizieren.
 * **Dual-Storage (Cloud + Edge):** Primär werden die Daten als JSON-Payload via MQTT in die Cloud gepusht. Parallel läuft ein Fallback-Ringpuffer, der die Daten im CSV-Format auf die lokale MicroSD-Karte schreibt, falls das Mobilfunknetz bei hohen Geschwindigkeiten kurzzeitig abreißt.
 
-## 📦 Bibliotheken (Abhängigkeiten)
+## Bibliotheken (Abhängigkeiten)
 
 Um diesen Code zu kompilieren (z. B. via PlatformIO oder Arduino IDE), müssen folgende externe Bibliotheken installiert sein:
 
@@ -17,7 +17,7 @@ Um diesen Code zu kompilieren (z. B. via PlatformIO oder Arduino IDE), müssen f
 3. **`PubSubClient`** (von Nick O'Leary): Der schlanke Standard-Client für die MQTT-Cloud-Verbindung.
 4. **`OneWire`** & **`DallasTemperature`**: Für den parallelen Auslese-Bus der Motor- und ESC-Sensoren.
 
-## ⚙️ Konfiguration (Vor dem Flashen!)
+## Konfiguration (Vor dem Flashen!)
 
 Bevor du die Firmware auf den ESP32 lädst, musst du im oberen Bereich der `main.cpp` deine netzwerk- und cloudspezifischen Daten eintragen:
 
