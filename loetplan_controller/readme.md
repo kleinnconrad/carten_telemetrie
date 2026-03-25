@@ -1,10 +1,10 @@
-# RC-Telemetrie-System: Cloud Streaming & Architektur
+# RC-Telemetrie-System
 
 Dieses System erfasst hochfrequente Telemetriedaten (Geschwindigkeit, Drehzahl, Temperaturen) in einem RC-Fahrzeug und streamt diese in Echtzeit über ein Mobilfunknetz (LTE) an ein Cloud-Backend (via MQTT). Die Architektur ist auf höchste Zuverlässigkeit und Systemsicherheit ausgelegt, inklusive einer vom RC-Antrieb komplett isolierten Stromversorgung.
 
 ![schaltplan2](https://github.com/kleinnconrad/carten_telemetrie/blob/main/loetplan_controller/Schaltplan_Cloud.png)
 
-## 1. System-Architektur & Features
+## 1. System-Architektur
 
 * **Isolierte Stromversorgung:** Die gesamte Telemetrie-Elektronik wird über eine autarke 5V USB-Powerbank versorgt. Stromspitzen des LTE-Modems (bis zu 2A) können so keinen Brownout des RC-Empfängers verursachen.
 * **Live-Streaming (LTE & MQTT):** Daten werden asynchron als JSON-Payloads via MQTT über ein SIM7000G LTE-Modul an die Cloud gesendet.
@@ -84,7 +84,7 @@ Um den visuellen Lötplan als PNG zu generieren, nutzen wir Python und das Tool 
    uv run --with graphviz loetplan.py
    ```
 
-## 5. Betrieb & Datenfluss
+## 5. Betrieb
 
 1. **Boot:** Nach dem Verbinden der USB-Powerbank initialisiert der ESP32 die SD-Karte und wartet auf einen GPS-Fix.
 2. **Connect:** Das Modem wählt sich ins LTE-Netz ein und baut die TCP-Verbindung zum MQTT-Broker der Cloud auf.
