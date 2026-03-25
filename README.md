@@ -1,9 +1,9 @@
 # carten_telemetrie
-Entwicklung einer Telemetrie Lösung für einen Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/kleinnconrad/RC100), um die Temperatur von Motor und ESC zu messen. Ebenfalls soll die Drehzahl der Kardanwelle gemessen werden.
+Entwicklung einer Cloud-Telemetrie-Lösung für einen Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/kleinnconrad/RC100), um Temperatur (Motor, ESC), Drehzahl (Kardanwelle) und GPS-Daten (Geschwindigkeit, Position) in Echtzeit zu erfassen.
 
-# Bauanleitung: DIY RC-Telemetrie-System (ESP32)
+# Bauanleitung: DIY Cloud-Telemetrie-System (ESP32 via LTE)
 
-Dieses Dokument beschreibt den Aufbau eines Edge-Sensor-Nodes zur Erfassung von Telemetriedaten (Motor-Temperatur, ESC-Temperatur und Drehzahl) in einem RC-Fahrzeug. Die Daten werden lokal auf einer MicroSD-Karte gespeichert und per WLAN-Access-Point bereitgestellt.
+Dieses Dokument beschreibt den Aufbau eines autarken IoT-Edge-Nodes für RC-Fahrzeuge. Die Sensordaten werden live über das Mobilfunknetz an ein Cloud-Dashboard (via MQTT) gestreamt. Eine MicroSD-Karte dient als ausfallsicheres, lokales Backup-System. Die Stromversorgung ist zum Schutz vor Brownouts komplett von der RC-Elektronik isoliert.
 
 ---
 
@@ -11,44 +11,51 @@ Dieses Dokument beschreibt den Aufbau eines Edge-Sensor-Nodes zur Erfassung von 
 
 | Komponente | Spezifikation / Typ | Anzahl | Bemerkung |
 | :--- | :--- | :--- | :--- |
-| **Microcontroller** | ESP32 Development Board (z.B. NodeMCU 32S) | 1 | Zentraleinheit für Ingestion & Webserver |
-| **Speichermodul** | MicroSD-Karten-Modul (SPI) | 1 | 3.3V-kompatibel |
-| **Speicherkarte** | MicroSD-Karte (FAT32 formatiert) | 1 | 8 GB oder 16 GB ausreichend |
+| **Microcontroller** | ESP32 Dev Board (z.B. NodeMCU) | 1 | Zentraleinheit für Ingestion & Streaming |
+| **Stromversorgung** | USB Powerbank (klein/leicht) | 1 | Isoliertes 5V Power-Management |
+| **LTE-Modem** | SIM7000G Breakout-Board | 1 | Für die Cloud-Anbindung (inkl. SIM-Karte) |
+| **GPS-Modul** | BN-220 (u-blox) | 1 | Für Geodaten & exakte Geschwindigkeit |
+| **Speichermodul** | MicroSD-Karten-Modul (SPI) | 1 | Lokaler Ringpuffer (3.3V-kompatibel) |
 | **Temperatursensor** | DS18B20 (Wasserdicht) | 2 | Digitale 1-Wire Sensoren für Motor & ESC |
 | **Drehzahlsensor** | Hall-Sensor Modul (z.B. A3144) | 1 | Erfasst das Magnetfeld für RPM-Berechnung |
 | **Magnet** | Neodym-Magnet (klein, z.B. 3x2mm) | 1 | Wird auf rotierende Welle geklebt |
-| **Widerstand** | 4,7 kΩ (Kilo-Ohm) | 1 | Pull-up-Widerstand für den 1-Wire Bus |
-| **Kabel & Stecker** | Jumper-Kabel (Dupont), Servostecker | Div. | Verbindungskomponenten |
-| **Befestigung** | Wärmeleitkleber, Kabelbinder, Tape | Div. | Mechanische Montage im Chassis |
+| **Widerstand** | 4,7 kΩ (Kilo-Ohm) | 1 | Pull-Up-Widerstand für den 1-Wire Bus |
 
 ---
 
 ## 2. Schaltplan & Pin-Belegung
 
-Alle Komponenten teilen sich eine gemeinsame Masse (**GND**).
+**WICHTIG:** Alle Komponenten teilen sich eine gemeinsame Masse (**GND**). Bei seriellen Verbindungen (UART) müssen die Leitungen zwingend überkreuzt werden (TX an RX, RX an TX).
 
-### Stromversorgung (vom RC-Empfänger)
-* **VCC (Rot):** Vom Empfänger (5V/6V BEC) an den **VIN** (oder 5V) Pin des ESP32.
-* **GND (Schwarz/Braun):** Vom Empfänger an einen **GND** Pin des ESP32.
+### Stromversorgung (Isoliert via Powerbank)
+* Das 5V-Kabel (Rot) der Powerbank splittet sich und geht an **VIN** des ESP32 **UND** an **VCC** des LTE-Modems.
+* Das GND-Kabel (Schwarz) geht an **GND** des ESP32 **UND** an **GND** des LTE-Modems.
+
+### LTE-Modem (UART 1)
+* **VCC & GND:** Direkt an die 5V Powerbank!
+* **TX (Senden):** an **GPIO 32** (RX1 am ESP32)
+* **RX (Empfangen):** an **GPIO 33** (TX1 am ESP32)
+
+### GPS-Modul (UART 2)
+* **VCC & GND:** an **3.3V** und **GND** des ESP32
+* **TX (Senden):** an **GPIO 16** (RX2 am ESP32)
+* **RX (Empfangen):** an **GPIO 17** (TX2 am ESP32)
 
 ### MicroSD-Karten-Modul (SPI-Bus)
-* **VCC:** an **3.3V** des ESP32
-* **GND:** an **GND** des ESP32
+* **VCC & GND:** an **3.3V** und **GND** des ESP32
 * **MOSI:** an **GPIO 23**
 * **MISO:** an **GPIO 19**
 * **SCK / CLK:** an **GPIO 18**
 * **CS / SS:** an **GPIO 5**
 
 ### Temperatursensoren (DS18B20)
-*Beide Sensoren werden parallel angeschlossen.*
-* **VCC (Rot):** an **3.3V** des ESP32
-* **GND (Schwarz):** an **GND** des ESP32
+*Beide Sensoren werden exakt parallel angeschlossen.*
+* **VCC (Rot) & GND (Schwarz):** an **3.3V** und **GND** des ESP32
 * **Data (Gelb/Blau):** an **GPIO 4** des ESP32
 * **WICHTIG:** Ein **4,7 kΩ Widerstand** muss als Brücke zwischen den 3.3V-Pin und den Data-Pin (GPIO 4) geschaltet werden.
 
 ### Hall-Sensor (RPM)
-* **VCC:** an **3.3V** des ESP32
-* **GND:** an **GND** des ESP32
+* **VCC & GND:** an **3.3V** und **GND** des ESP32
 * **Signal / DO:** an **GPIO 2** des ESP32
 
 ---
@@ -56,26 +63,26 @@ Alle Komponenten teilen sich eine gemeinsame Masse (**GND**).
 ## 3. Schritt-für-Schritt Aufbau
 
 ### Phase 1: Vorbereitung & Software
-1. **Speicher vorbereiten:** Formatiere die MicroSD-Karte am PC im **FAT32** Format und lege sie in das Modul ein.
-2. **Bibliotheken installieren:** Öffne die Arduino IDE und installiere die Bibliotheken `OneWire` (Paul Stoffregen) und `DallasTemperature` (Miles Burton).
-3. **Flashen:** Verbinde den ESP32 per USB, lade den C++ Code hoch und prüfe im Seriellen Monitor (Baudrate 115200), ob die SD-Karte erfolgreich initialisiert wird.
+1. **Abhängigkeiten installieren:** Öffne die Arduino IDE / PlatformIO und installiere folgende Bibliotheken: `TinyGSM`, `TinyGPSPlus`, `PubSubClient`, `OneWire` und `DallasTemperature`.
+2. **Zugangsdaten eintragen:** Trage vor dem Flashen deine SIM-Karten-APN und die Zugangsdaten deines MQTT-Brokers im oberen Bereich der `main.cpp` ein.
+3. **Flashen:** Verbinde den ESP32 per USB, lade den C++ Code hoch und prüfe im Seriellen Monitor, ob das LTE-Modem erfolgreich initialisiert wird.
 
 ### Phase 2: Löten & Verkabeln
-4. **Stromversorgung konfektionieren:** Löte oder crimpe ein Kabel mit einem Servostecker, das in einen freien Kanal des RC-Empfängers passt. Führe Plus an `VIN` und Minus an `GND` des ESP32.
-5. **Bus-Systeme verbinden:** Verlöte das SD-Modul, den Hall-Sensor und die Temperatursensoren gemäß dem obigen Pin-Mapping.
-6. **Pull-up integrieren:** Löte den 4,7 kΩ Widerstand zwischen die 3.3V-Leitung und die Datenleitung der Temperatursensoren.
-7. **Isolieren:** Sichere alle offenen Lötstellen mit Schrumpfschlauch oder Heißkleber gegen Kurzschlüsse durch Vibrationen oder Feuchtigkeit.
+4. **Isolierte Stromversorgung:** Opfere ein altes USB-Kabel, um die 5V-Leitung der Powerbank direkt an das LTE-Modem und den ESP32 anzulöten.
+5. **Bus-Systeme verbinden:** Verlöte GPS, SD-Modul, Hall-Sensor und Temperatursensoren gemäß dem Pin-Mapping. Achte auf die UART-Kreuzungen (TX->RX).
+6. **Pull-Up integrieren:** Löte den 4,7 kΩ Widerstand zwischen die 3.3V-Leitung und die Datenleitung der Temperatursensoren.
+7. **Isolieren:** Sichere alle offenen Lötstellen mit Schrumpfschlauch oder Heißkleber gegen Kurzschlüsse durch Vibrationen.
 
 ### Phase 3: Mechanische Integration
-8. **Zentraleinheit platzieren:** Befestige den ESP32 und das SD-Modul geschützt im Chassis (z. B. in der Empfängerbox oder mit Klettband auf dem Top-Deck).
-9. **Magnet montieren:** Klebe den Neodym-Magneten mit Sekundenkleber/Epoxy auf das Hauptzahnrad (Spur Gear) oder die Antriebswelle. (Tipp: Gegenüberliegend einen Tropfen Kleber als Gegengewicht gegen Unwucht anbringen).
+8. **Zentraleinheit platzieren:** Befestige die Elektronik geschützt im Carten T410R Chassis. Das **GPS-Modul** muss zwingend mit der Keramik-Antenne nach oben zeigen und darf nicht durch Carbon oder Metall verdeckt werden.
+9. **Magnet montieren:** Klebe den Neodym-Magneten auf die Kardanwelle (Gegengewicht gegen Unwucht nicht vergessen!).
 10. **Hall-Sensor ausrichten:** Montiere den Sensor starr so, dass der Magnet bei jeder Umdrehung in ca. 1-2 mm Abstand daran vorbeifliegt.
-11. **Sensoren anbringen:** * *ESC:* Einen Sensor mit wärmeleitendem Kleber zwischen die Kühlrippen des Fahrtenreglers klemmen.
-    * *Motor:* Den zweiten Sensor an die Außenhülle des Brushless-Motors anlegen und mit hitzebeständigem Kaptonband oder einem Kabelbinder fixieren.
+11. **Temperatursensoren:** Einen Sensor zwischen die Kühlrippen des ESC klemmen. Den zweiten an die Motor-Außenhülle anlegen und mit hitzebeständigem Kaptonband fixieren.
 
 ---
 
-## 4. Betrieb & Datenabruf
-1. Schalte das RC-Auto ein. Der ESP32 startet automatisch die Datenaufzeichnung auf die SD-Karte und spannt das WLAN `RC-Telemetry` auf.
-2. Verbinde dich nach der Fahrt mit dem Smartphone in dieses WLAN (Passwort: `password123`).
-3. Öffne im Browser die IP `http://192.168.4.1` und lade die CSV-Datei herunter.
+## 4. Betrieb & Live-Streaming
+
+1. **Einschalten:** Verbinde die USB-Powerbank. Der ESP32 fährt hoch, initialisiert die SD-Karte als Fallback und sucht nach einem GPS-Fix.
+2. **Verbindungsaufbau:** Das System wählt sich automatisch ins LTE-Netz ein und verbindet sich mit der Cloud (MQTT-Broker).
+3. **Fahrt & Analyse:** Das Auto ist bereit. Alle Daten (Position, Speed, RPM, Temps) werden mit 2 Hz als JSON-Payload in die Cloud gestreamt und können dort in Echtzeit (z.B. über Grafana) überwacht werden. Die CSV-Datei auf der SD-Karte dient lediglich als Backup.
