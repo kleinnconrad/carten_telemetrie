@@ -2,6 +2,8 @@
 
 Dieses Projekt nutzt einen zu 100 % Serverless-basierten Ansatz in der Microsoft Azure Cloud. Dadurch entstehen im Leerlauf (wenn das Auto nicht fährt) **keine laufenden Compute-Kosten**. Die Pipeline verarbeitet die JSON-Telemetriedaten in Echtzeit und stellt sie für Live-Dashboards bereit.
 
+![pipeline](https://github.com/kleinnconrad/carten_telemetrie/blob/main/cloud_integration/Azure_Cloud_Pipeline.png)
+
 ## Der Datenfluss (Pipeline)
 
 ### 1. Ingestion Layer: Azure IoT Hub (F1 Free Tier)
