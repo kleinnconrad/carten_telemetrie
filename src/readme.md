@@ -1,54 +1,33 @@
-# RC Telemetrie Firmware (ESP32)
+# Firmware: RC Cloud Telemetry (ESP32)
 
-Dieses Repository enthält die C++ Firmware für ein ESP32-basiertes Edge-Device zur Erfassung von Telemetriedaten in einem RC-Fahrzeug. Das System liest hochfrequent Sensordaten (Temperatur und Drehzahl) aus, speichert diese lokal auf einer MicroSD-Karte und stellt sie im Nachgang über einen eigenen WLAN-Access-Point zum Download bereit.
+Diese Firmware verwandelt den ESP32 in einen autarken IoT-Edge-Client für RC-Fahrzeuge. Anstatt Daten nur lokal zu speichern, baut das System über ein LTE-Modem eine Verbindung zum Mobilfunknetz auf und streamt hochfrequente Sensordaten (GPS, Drehzahlen, Temperaturen) in Echtzeit über das MQTT-Protokoll an eine Cloud-Infrastruktur.
 
-## Kern-Features & Architektur
+## 🚀 Kern-Features
 
-* **Asynchrone Datenerfassung:** Die 1-Wire-Temperatursensoren (DS18B20) benötigen bis zu 750ms für eine 12-Bit-Wandlung. Die Firmware nutzt `setWaitForConversion(false)`, um den Haupt-Loop nicht zu blockieren.
-* **Echtzeit-Interrupts (ISR):** Die Erfassung der Drehzahlimpulse (Hall-Sensor) erfolgt komplett asynchron über Hardware-Interrupts an GPIO 2.
-* **Hohe Ingestion-Rate:** Die Telemetriedaten werden mit **5 Hz (alle 200 ms)** auf die MicroSD-Karte geschrieben.
-* **Integrierter Webserver:** Der ESP32 spannt ein eigenes WLAN auf (`RC-Telemetry`). Die gesammelten CSV-Daten können nach der Fahrt direkt über den Browser eines Smartphones heruntergeladen werden.
+* **Non-Blocking Architecture:** Die Firmware ist extrem asynchron aufgebaut. Das Parsen von GPS-NMEA-Daten (UART) und das Warten auf Temperaturwandlungen (1-Wire) blockieren niemals den Main-Loop. Dadurch geht kein einziger RPM-Interrupt verloren.
+* **Hardware UART Routing:** Das System nutzt die dedizierten Hardware-Serial-Schnittstellen des ESP32, um parallel mit dem LTE-Modem (`UART 1`) und dem GPS-Modul (`UART 2`) zu kommunizieren.
+* **Dual-Storage (Cloud + Edge):** Primär werden die Daten als JSON-Payload via MQTT in die Cloud gepusht. Parallel läuft ein Fallback-Ringpuffer, der die Daten im CSV-Format auf die lokale MicroSD-Karte schreibt, falls das Mobilfunknetz bei hohen Geschwindigkeiten kurzzeitig abreißt.
 
-## 🔌 Pin-Mapping (Hardware Setup)
+## 📦 Bibliotheken (Abhängigkeiten)
 
-| Komponente | Pin am ESP32 | Protokoll / Funktion |
-| :--- | :--- | :--- |
-| **MicroSD CS** | `GPIO 5` | SPI (Chip Select) |
-| **MicroSD MOSI** | `GPIO 23` | SPI |
-| **MicroSD MISO** | `GPIO 19` | SPI |
-| **MicroSD SCK** | `GPIO 18` | SPI |
-| **Temp. Sensoren** | `GPIO 4` | 1-Wire Bus (DS18B20)* |
-| **Hall-Sensor (RPM)** | `GPIO 2` | Digitaler Input (Hardware Interrupt) |
+Um diesen Code zu kompilieren (z. B. via PlatformIO oder Arduino IDE), müssen folgende externe Bibliotheken installiert sein:
 
-*\*Hinweis: Der 1-Wire Bus an GPIO 4 erfordert zwingend einen 4,7kΩ Pull-Up Widerstand gegen 3.3V.*
+1. **`TinyGSM`** (von Volodymyr Shymanskyy): Für die AT-Kommunikation mit dem SIM7000G LTE-Modem.
+2. **`TinyGPSPlus`** (von Mikal Hart): Zum asynchronen Parsen der NMEA-Sätze des BN-220 GPS-Moduls.
+3. **`PubSubClient`** (von Nick O'Leary): Der schlanke Standard-Client für die MQTT-Cloud-Verbindung.
+4. **`OneWire`** & **`DallasTemperature`**: Für den parallelen Auslese-Bus der Motor- und ESC-Sensoren.
 
-## Software Abhängigkeiten
+## ⚙️ Konfiguration (Vor dem Flashen!)
 
-Um dieses Projekt zu kompilieren (via Arduino IDE oder PlatformIO), werden folgende Bibliotheken benötigt:
+Bevor du die Firmware auf den ESP32 lädst, musst du im oberen Bereich der `main.cpp` deine netzwerk- und cloudspezifischen Daten eintragen:
 
-1. `OneWire` (für das Protokoll der Temperatursensoren)
-2. `DallasTemperature` (zur Auswertung der DS18B20 Sensoren)
-3. Integrierte ESP32-Bibliotheken: `WiFi`, `WebServer`, `SPI`, `SD`
+```cpp
+// 1. Mobilfunk-Provider (APN) - z.B. für 1NCE IoT Karten oft "iot.1nce.net"
+const char apn[]      = "internet"; 
+const char gprsUser[] = "";
+const char gprsPass[] = "";
 
-## Betrieb & Datenabruf
-
-Sobald der ESP32 mit Strom versorgt wird, beginnt er automatisch mit der Aufzeichnung der Daten in die Datei `/telemetry.csv`. Bei jedem Neustart wird ein neuer Block (`--- NEUE FAHRT ---`) in der Datei angelegt.
-
-**So lädst du die Daten nach der Fahrt herunter:**
-
-1. Verbinde dein Smartphone/Laptop mit dem WLAN des RC-Autos:
-   * **SSID:** `RC-Telemetry`
-   * **Passwort:** `password123`
-2. Öffne einen Webbrowser und navigiere zu:
-   * **URL:** `http://192.168.4.1`
-3. Klicke auf "CSV-Datei Herunterladen".
-
-## Datenstruktur (CSV-Schema)
-
-Die exportierte `telemetry.csv` ist wie folgt strukturiert:
-
-```csv
-Timestamp_ms,Temp_Motor_C,Temp_ESC_C,RPM
-200,35.50,42.00,0
-400,35.50,42.25,1200
-600,36.00,42.50,2450
+// 2. Cloud-Backend (MQTT Broker)
+const char* mqttServer = "dein-mqtt-broker.com"; // IP oder URL deiner Cloud
+const int   mqttPort   = 1883;                   // Standard-Port (1883 unverschlüsselt, 8883 TLS)
+const char* mqttTopic  = "rc-car/telemetry/live";
