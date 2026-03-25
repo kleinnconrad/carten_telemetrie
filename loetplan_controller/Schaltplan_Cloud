@@ -21,7 +21,7 @@ digraph Cloud_Schaltplan {
 		PB [label=<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
       <TR><TD BGCOLOR="#90ee90"><B>USB Powerbank</B></TD></TR>
-      <TR><TD PORT="5v">5V (Rot)</TD></TR>
+      <TR><TD PORT="v5">5V (Rot)</TD></TR>
       <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
     </TABLE>>]
 		LTE [label=<
@@ -86,29 +86,29 @@ digraph Cloud_Schaltplan {
 		TEMP_ESC -> HALL [style=invis]
 		HALL -> RES [style=invis]
 	}
-	PB:"5v":e -> ESP:vin:w [color=red dir=none penwidth=2]
-	PB:gnd:e -> ESP:gnd_l1:w [color=black dir=none penwidth=2]
-	LTE:vcc:e -> ESP:vin:w [color=red dir=none penwidth=2]
-	LTE:gnd:e -> ESP:gnd_l1:w [color=black dir=none penwidth=2]
+	PB:v5:e -> ESP:vin:w [color=red dir=none penwidth=3]
+	PB:gnd:e -> ESP:gnd_l1:w [color=black dir=none penwidth=3]
+	PB:v5:w -> LTE:vcc:w [color=red dir=none penwidth=3]
+	PB:gnd:w -> LTE:gnd:w [color=black dir=none penwidth=3]
 	LTE:tx:e -> ESP:g32:w [color=purple dir=none penwidth=2]
 	LTE:rx:e -> ESP:g33:w [color=magenta dir=none penwidth=2]
-	SD:vcc:e -> ESP:"3v3_l":w [color=red dir=none penwidth=2]
+	SD:vcc:e -> ESP:"3v3_l":w [color=red dir=none penwidth=2 style=dashed]
 	SD:gnd:e -> ESP:gnd_l2:w [color=black dir=none penwidth=2]
 	SD:mosi:e -> ESP:g23:w [color=blue dir=none penwidth=2]
 	SD:miso:e -> ESP:g19:w [color=blue dir=none penwidth=2]
 	SD:sck:e -> ESP:g18:w [color=blue dir=none penwidth=2]
 	SD:cs:e -> ESP:g5:w [color=blue dir=none penwidth=2]
-	ESP:"3v3_r1":e -> GPS:vcc:w [color=red dir=none penwidth=2]
+	ESP:"3v3_r1":e -> GPS:vcc:w [color=red dir=none penwidth=2 style=dashed]
 	ESP:gnd_r1:e -> GPS:gnd:w [color=black dir=none penwidth=2]
 	ESP:g16:e -> GPS:tx:w [color=magenta dir=none penwidth=2]
 	ESP:g17:e -> GPS:rx:w [color=purple dir=none penwidth=2]
-	ESP:"3v3_r2":e -> TEMP_MOT:vcc:w [color=red dir=none penwidth=2]
+	ESP:"3v3_r2":e -> TEMP_MOT:vcc:w [color=red dir=none penwidth=2 style=dashed]
 	ESP:gnd_r2:e -> TEMP_MOT:gnd:w [color=black dir=none penwidth=2]
 	ESP:g4:e -> TEMP_MOT:dq:w [color=orange dir=none penwidth=2]
-	ESP:"3v3_r2":e -> TEMP_ESC:vcc:w [color=red dir=none penwidth=2]
+	ESP:"3v3_r2":e -> TEMP_ESC:vcc:w [color=red dir=none penwidth=2 style=dashed]
 	ESP:gnd_r2:e -> TEMP_ESC:gnd:w [color=black dir=none penwidth=2]
 	ESP:g4:e -> TEMP_ESC:dq:w [color=orange dir=none penwidth=2]
-	ESP:"3v3_r2":e -> HALL:vcc:w [color=red dir=none penwidth=2]
+	ESP:"3v3_r2":e -> HALL:vcc:w [color=red dir=none penwidth=2 style=dashed]
 	ESP:gnd_r2:e -> HALL:gnd:w [color=black dir=none penwidth=2]
 	ESP:g2:e -> HALL:out:w [color=green dir=none penwidth=2]
 	ESP:"3v3_r2":e -> RES:p1:w [color=red dir=none penwidth=2 style=dashed]
