@@ -8,7 +8,7 @@ Diese Firmware verwandelt den ESP32 in einen autarken IoT-Edge-Client für RC-Fa
 * **Hardware UART Routing:** Das System nutzt die dedizierten Hardware-Serial-Schnittstellen des ESP32, um parallel mit dem LTE-Modem (`UART 1`) und dem GPS-Modul (`UART 2`) zu kommunizieren.
 * **Dual-Storage (Cloud + Edge):** Primär werden die Daten als JSON-Payload via MQTT in die Cloud gepusht. Parallel läuft ein Fallback-Ringpuffer, der die Daten im CSV-Format auf die lokale MicroSD-Karte schreibt, falls das Mobilfunknetz bei hohen Geschwindigkeiten kurzzeitig abreißt.
 
-## Bibliotheken (Abhängigkeiten)
+## Bibliotheken
 
 Um diesen Code zu kompilieren (z. B. via PlatformIO oder Arduino IDE), müssen folgende externe Bibliotheken installiert sein:
 
