@@ -1,0 +1,25 @@
+digraph Azure_Serverless_Architecture {
+	nodesep=0.6 rankdir=LR ranksep=1.2 splines=spline
+	node [fontname=Helvetica fontsize=12 margin=0.2 shape=box style="filled, rounded"]
+	"Edge" [label="🚗 RC Carten T410R
+ESP32 + SIM7000G LTE" fillcolor="#e1e1e1" fontcolor=black]
+	IoTHub [label="☁️ Azure IoT Hub
+(Free Tier F1)
+MQTT Broker / Ingestion" fillcolor="#0078D4" fontcolor=white]
+	Function [label="⚡ Azure Function
+(Consumption Plan)
+Event-Driven Processing" fillcolor="#0078D4" fontcolor=white]
+	CosmosDB [label="🗄️ Azure Cosmos DB
+(Serverless NoSQL)
+Langzeitspeicher (JSON)" fillcolor="#5CDA99" fontcolor=black]
+	Dashboard [label="📊 Live Dashboard
+(Power BI / SignalR)
+Echtzeit-Telemetrie" fillcolor="#F2C811" fontcolor=black]
+	"Edge" -> IoTHub [label=" LTE / MQTT
+(2 Hz JSON Stream)" color=black penwidth=2]
+	IoTHub -> Function [label=" Event Trigger" color="#0078D4" penwidth=2]
+	Function -> CosmosDB [label=" Save Document
+(Cosmos DB SDK)" color="#5CDA99" penwidth=2]
+	Function -> Dashboard [label=" Live Push
+(REST / WebSockets)" color="#F2C811" penwidth=2]
+}
