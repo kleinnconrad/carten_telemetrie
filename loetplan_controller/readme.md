@@ -2,7 +2,7 @@
 
 Dieses System erfasst hochfrequente Telemetriedaten (Geschwindigkeit, Drehzahl, Temperaturen) in einem RC-Fahrzeug und streamt diese in Echtzeit über ein Mobilfunknetz (LTE) an ein Cloud-Backend (via MQTT). Die Architektur ist auf höchste Zuverlässigkeit und Systemsicherheit ausgelegt, inklusive einer vom RC-Antrieb komplett isolierten Stromversorgung.
 
-![schaltplan](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/Schaltplan_Cloud_Telemetry.png)
+![schaltplan](https://github.com/kleinnconrad/carten_telemetrie/blob/main/loetplan_controller/Schaltplan_Cloud.png)
 
 ## 1. System-Architektur & Features
 
