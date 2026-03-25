@@ -1,201 +1,174 @@
 import graphviz
 
 def erstelle_perfekten_cloud_loetplan():
-    # Setup des Graphen: 'spline' für sanfte Kurven, riesige Abstände zur Entflechtung.
-    # rankdir='TB' für zentrale Hub-and-Spoke-Anordnung.
-    dot = graphviz.Digraph('Cloud_Schaltplan', filename='RC_Cloud_Telemetry_Schaltplan_Pro', format='png')
-    dot.attr(rankdir='TB', splines='spline', nodesep='2.5', ranksep='5.0', overlap='false', compound='true')
-    dot.attr('node', shape='none', fontname='Helvetica', fontsize='12')
+    dot = graphviz.Digraph('Cloud_Schaltplan', filename='Schaltplan_Cloud_Perfekt', format='png')
     
-    # Diagramm-Titel
-    dot.attr(label="RC Cloud Telemetry ESP32 Lötplan (Autark & Isoliert)", labelloc="t", fontsize="24")
+    # rankdir='LR' erzwingt den horizontalen Fluss.
+    # splines='polyline' erzwingt direkte Linien mit harten Knicken (keine Überschneidungen über Boxen).
+    dot.attr(rankdir='LR', splines='polyline', nodesep='1.0', ranksep='4.0')
+    dot.attr('node', shape='none', fontname='Helvetica', fontsize='12')
 
-    # --- Z E N T R A L E (Hub) ---
-
-    # Physisches Pin-Layout für NodeMCU ESP32 (DevKit V1, basierend auf image_7.png)
+    # 1. ESP32 ZENTRALE (Zweispaltig für strikte Links/Rechts Trennung)
     esp32_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="8">
-      <TR><TD COLSPAN="3" BGCOLOR="#add8e6"><B>NodeMCU ESP32</B> (Central Hub)</TD></TR>
-      <TR><TD BGCOLOR="#d3d3d3">ESP32 Pin</TD><TD BGCOLOR="#d3d3d3">Physischer Port</TD><TD BGCOLOR="#d3d3d3">Zweck</TD></TR>
-      
-      <TR><TD PORT="vin">VIN (5V Input)</TD><TD>Pin 1 (Oben Links)</TD><TD>Haupt-Power (Powerbank)</TD></TR>
-      <TR><TD PORT="3v3_out">3.3V (Output)</TD><TD>Pin 2 (Oben Rechts)</TD><TD>Sensor Power Bus (3.3V)</TD></TR>
-      <TR><TD PORT="gnd">GND</TD><TD>Pin 3 (Common GND)</TD><TD>Gemeinsame Masse</TD></TR>
-
-      <TR><TD PORT="g32">GPIO 32 (RX1)</TD><TD>Pin 16</TD><TD>An LTE: TX (Senden)</TD></TR>
-      <TR><TD PORT="g33">GPIO 33 (TX1)</TD><TD>Pin 17</TD><TD>An LTE: RX (Empfangen)</TD></TR>
-
-      <TR><TD PORT="g16">GPIO 16 (RX2)</TD><TD>Pin 14</TD><TD>An GPS: TX (Senden)</TD></TR>
-      <TR><TD PORT="g17">GPIO 17 (TX2)</TD><TD>Pin 15</TD><TD>An GPS: RX (Empfangen)</TD></TR>
-
-      <TR><TD PORT="g23">GPIO 23 (MOSI)</TD><TD>Pin 19</TD><TD>SD: MOSI</TD></TR>
-      <TR><TD PORT="g19">GPIO 19 (MISO)</TD><TD>Pin 18</TD><TD>SD: MISO</TD></TR>
-      <TR><TD PORT="g18">GPIO 18 (SCK)</TD><TD>Pin 17 (SPI CLK)</TD><TD>SD: SCK</TD></TR>
-      <TR><TD PORT="g5">GPIO 5 (CS)</TD><TD>Pin 15 (SPI CS)</TD><TD>SD: Chip Select</TD></TR>
-
-      <TR><TD PORT="g4">GPIO 4 (1-Wire Bus)</TD><TD>Pin 14 (1-Wire Data)</TD><TD>Temp. Sensoren DQ</TD></TR>
-      <TR><TD PORT="g2">GPIO 2 (Interrupt)</TD><TD>Pin 13 (RPM Signal)</TD><TD>Hall-Sensor DOUT</TD></TR>
-      
-      <TR><TD BGCOLOR="#f0f0f0"><I>Weitere Pins...</I></TD><TD BGCOLOR="#f0f0f0">...</TD><TD BGCOLOR="#f0f0f0">...</TD></TR>
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD COLSPAN="3" BGCOLOR="#add8e6"><B>NodeMCU ESP32 (Hub)</B></TD></TR>
+      <TR><TD BGCOLOR="#d3d3d3"><B>Linke Pins</B></TD><TD BGCOLOR="#e0e0e0" ROWSPAN="11"> ESP32 <br/> Core </TD><TD BGCOLOR="#d3d3d3"><B>Rechte Pins</B></TD></TR>
+      <TR><TD PORT="vin">VIN (5V In)</TD><TD PORT="3v3_r1">3.3V (Out)</TD></TR>
+      <TR><TD PORT="gnd_l1">GND (Masse)</TD><TD PORT="gnd_r1">GND (Masse)</TD></TR>
+      <TR><TD PORT="g32">GPIO 32 (RX1)</TD><TD PORT="g16">GPIO 16 (RX2)</TD></TR>
+      <TR><TD PORT="g33">GPIO 33 (TX1)</TD><TD PORT="g17">GPIO 17 (TX2)</TD></TR>
+      <TR><TD PORT="3v3_l">3.3V (Out)</TD><TD PORT="3v3_r2">3.3V (Out)</TD></TR>
+      <TR><TD PORT="gnd_l2">GND (Masse)</TD><TD PORT="gnd_r2">GND (Masse)</TD></TR>
+      <TR><TD PORT="g23">GPIO 23 (MOSI)</TD><TD PORT="g4">GPIO 4 (1-Wire)</TD></TR>
+      <TR><TD PORT="g19">GPIO 19 (MISO)</TD><TD PORT="g2">GPIO 2 (Interrupt)</TD></TR>
+      <TR><TD PORT="g18">GPIO 18 (SCK)</TD><TD>---</TD></TR>
+      <TR><TD PORT="g5">GPIO 5 (CS)</TD><TD>---</TD></TR>
     </TABLE>>'''
     dot.node('ESP', label=esp32_html)
 
-    # --- P E R I P H E R I E (Rund um den Hub) ---
-
-    # 1. Power & Inputs (Rank: Top)
+    # 2. KOMPONENTEN LINKE SEITE
     pb_html = '''<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
-      <TR><TD COLSPAN="2" BGCOLOR="#90ee90"><B>USB Powerbank</B> (Autark)</TD></TR>
-      <TR><TD BGCOLOR="#f0f0f0">USB-Kabel Ader</TD><TD BGCOLOR="#f0f0f0">Zweck / An ESP</TD></TR>
-      <TR><TD PORT="vbus">5V (VBUS/Rot)</TD><TD>An ESP: VIN (Pin 1)</TD></TR>
-      <TR><TD PORT="gnd">GND (Schwarz)</TD><TD>An ESP: GND (Pin 3)</TD></TR>
-    </TABLE>>'''
-    
-    hall_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
-      <TR><TD COLSPAN="2" BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B> (RPM)</TD></TR>
-      <TR><TD BGCOLOR="#f0f0f0">Sensor Pin</TD><TD BGCOLOR="#f0f0f0">Zweck / An ESP</TD></TR>
-      <TR><TD PORT="vcc">1: VCC (3.3V)</TD><TD>An ESP: 3.3V (Pin 2)</TD></TR>
-      <TR><TD PORT="gnd">2: GND</TD><TD>An ESP: GND (Pin 3)</TD></TR>
-      <TR><TD PORT="out">3: DOUT (Signal)</TD><TD>An ESP: GPIO 2 (Pin 13)</TD></TR>
-    </TABLE>>'''
-
-    with dot.subgraph() as s_top:
-        s_top.attr(rank='same')
-        s_top.node('PB', label=pb_html)
-        s_top.node('HALL', label=hall_html)
-        s_top.edge('PB', 'HALL', style='invis') # Positionierungshilfe
-
-    # 2. Storage & Cloud (Rank: Bottom-Left)
-    sd_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5">
-      <TR><TD COLSPAN="2" BGCOLOR="#d3d3d3"><B>MicroSD Modul</B> (SPI)</TD></TR>
-      <TR><TD BGCOLOR="#f0f0f0">Sensor Pin</TD><TD BGCOLOR="#f0f0f0">Zweck / An ESP</TD></TR>
-      <TR><TD PORT="vcc">VCC (3.3V)</TD><TD>An ESP: 3.3V (Pin 2)</TD></TR>
-      <TR><TD PORT="gnd">GND</TD><TD>An ESP: GND (Pin 3)</TD></TR>
-      <TR><TD PORT="mosi">MOSI</TD><TD>An ESP: GPIO 23 (Pin 19)</TD></TR>
-      <TR><TD PORT="miso">MISO</TD><TD>An ESP: GPIO 19 (Pin 18)</TD></TR>
-      <TR><TD PORT="sck">SCK</TD><TD>An ESP: GPIO 18 (Pin 17)</TD></TR>
-      <TR><TD PORT="cs">CS</TD><TD>An ESP: GPIO 5 (Pin 15)</TD></TR>
+      <TR><TD BGCOLOR="#90ee90"><B>USB Powerbank</B></TD></TR>
+      <TR><TD PORT="5v">5V (Rot)</TD></TR>
+      <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
     </TABLE>>'''
     
     lte_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5">
-      <TR><TD COLSPAN="2" BGCOLOR="#ffa07a"><B>SIM7000 LTE Modul</B> (UART1)</TD></TR>
-      <TR><TD BGCOLOR="#f0f0f0">Sensor Pin</TD><TD BGCOLOR="#f0f0f0">Zweck / An ESP</TD></TR>
-      <TR><TD PORT="vcc">VCC (5V In!)</TD><TD>An ESP: VIN (Pin 1)</TD></TR>
-      <TR><TD PORT="gnd">GND</TD><TD>An ESP: GND (Pin 3)</TD></TR>
-      <TR><TD PORT="tx">TX (Senden)</TD><TD>An ESP: GPIO 32 (RX1)</TD></TR>
-      <TR><TD PORT="rx">RX (Empfangen)</TD><TD>An ESP: GPIO 33 (TX1)</TD></TR>
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffa07a"><B>SIM7000 LTE Modul</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (5V In)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="tx">TX (Senden)</TD></TR>
+      <TR><TD PORT="rx">RX (Empfang)</TD></TR>
     </TABLE>>'''
 
-    with dot.subgraph() as s_bot_left:
-        s_bot_left.attr(rank='same')
-        s_bot_left.node('SD', label=sd_html)
-        s_bot_left.node('LTE', label=lte_html)
-        s_bot_left.edge('SD', 'LTE', style='invis') # Positionierungshilfe
+    sd_html = '''<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (3.3V)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="mosi">MOSI</TD></TR>
+      <TR><TD PORT="miso">MISO</TD></TR>
+      <TR><TD PORT="sck">SCK</TD></TR>
+      <TR><TD PORT="cs">CS</TD></TR>
+    </TABLE>>'''
 
-    # 3. GPS & Sensors (Rank: Bottom-Right)
+    with dot.subgraph() as s_left:
+        s_left.attr(rank='same')
+        s_left.node('PB', label=pb_html)
+        s_left.node('LTE', label=lte_html)
+        s_left.node('SD', label=sd_html)
+        s_left.edge('PB', 'LTE', style='invis')
+        s_left.edge('LTE', 'SD', style='invis')
+
+    # 3. KOMPONENTEN RECHTE SEITE
     gps_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5">
-      <TR><TD COLSPAN="2" BGCOLOR="#87cefa"><B>GPS Modul</B> (z.B. BN-220)</TD></TR>
-      <TR><TD BGCOLOR="#f0f0f0">Sensor Pin</TD><TD BGCOLOR="#f0f0f0">Zweck / An ESP</TD></TR>
-      <TR><TD PORT="vcc">VCC (3.3V)</TD><TD>An ESP: 3.3V (Pin 2)</TD></TR>
-      <TR><TD PORT="gnd">GND</TD><TD>An ESP: GND (Pin 3)</TD></TR>
-      <TR><TD PORT="tx">TX (Senden)</TD><TD>An ESP: GPIO 16 (RX2)</TD></TR>
-      <TR><TD PORT="rx">RX (Empfangen)</TD><TD>An ESP: GPIO 17 (TX2)</TD></TR>
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#87cefa"><B>GPS BN-220</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (3.3V)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="tx">TX (Senden)</TD></TR>
+      <TR><TD PORT="rx">RX (Empfang)</TD></TR>
     </TABLE>>'''
 
-    temp_motor_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="3" BGCOLOR="#ffffe0"><B>DS18B20 (Motor)</B></TD></TR>
-      <TR><TD BGCOLOR="#f0f0f0">Sensor-Ader</TD><TD BGCOLOR="#f0f0f0">Kabel-Farbe</TD><TD BGCOLOR="#f0f0f0">Zweck / An ESP</TD></TR>
-      <TR><TD PORT="vcc">VDD (Power)</TD><TD>Rot</TD><TD>An ESP: 3.3V (Pin 2)</TD></TR>
-      <TR><TD PORT="gnd">GND</TD><TD>Schwarz</TD><TD>An ESP: GND (Pin 3)</TD></TR>
-      <TR><TD PORT="dq">Data (DQ)</TD><TD>Gelb / Blau</TD><TD>An ESP: GPIO 4 (Pin 14)</TD></TR>
+    temp_mot_html = '''<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 (Motor)</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (Rot)</TD></TR>
+      <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
+      <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
     </TABLE>>'''
-    
+
     temp_esc_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="3" BGCOLOR="#ffffe0"><B>DS18B20 (ESC)</B></TD></TR>
-      <TR><TD BGCOLOR="#f0f0f0">Sensor-Ader</TD><TD BGCOLOR="#f0f0f0">Kabel-Farbe</TD><TD BGCOLOR="#f0f0f0">Zweck / An ESP</TD></TR>
-      <TR><TD PORT="vcc">VDD (Power)</TD><TD>Rot</TD><TD>An ESP: 3.3V (Pin 2)</TD></TR>
-      <TR><TD PORT="gnd">GND</TD><TD>Schwarz</TD><TD>An ESP: GND (Pin 3)</TD></TR>
-      <TR><TD PORT="dq">Data (DQ)</TD><TD>Gelb / Blau</TD><TD>An ESP: GPIO 4 (Pin 14)</TD></TR>
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 (ESC)</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (Rot)</TD></TR>
+      <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
+      <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+    </TABLE>>'''
+
+    hall_html = '''<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
+      <TR><TD PORT="vcc">1: VCC (3.3V)</TD></TR>
+      <TR><TD PORT="gnd">2: GND</TD></TR>
+      <TR><TD PORT="out">3: DOUT (Signal)</TD></TR>
     </TABLE>>'''
 
     res_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="2">
-      <TR><TD COLSPAN="2" BGCOLOR="white"><B>4.7 kΩ Pull-Up Widerstand</B></TD></TR>
-      <TR><TD PORT="p1">Widerstand Pin 1</TD><TD PORT="p2">Widerstand Pin 2</TD></TR>
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="2" BGCOLOR="white"><B>4.7 kΩ Pull-Up</B></TD></TR>
+      <TR><TD PORT="p1">Zu 3.3V</TD><TD PORT="p2">Zu GPIO 4</TD></TR>
     </TABLE>>'''
 
-    with dot.subgraph() as s_bot_right:
-        s_bot_right.attr(rank='same')
-        s_bot_right.node('GPS', label=gps_html)
-        s_bot_right.node('TEMP_MOT', label=temp_motor_html)
-        s_bot_right.node('TEMP_ESC', label=temp_esc_html)
-        s_bot_right.node('RES', label=res_html)
-        # Positionierungshilfe: GPS -> Motor Temp -> ESC Temp -> Widerstand
-        s_bot_right.edge('GPS', 'TEMP_MOT', style='invis') 
-        s_bot_right.edge('TEMP_MOT', 'TEMP_ESC', style='invis') 
-        s_bot_right.edge('TEMP_ESC', 'RES', style='invis')  
+    with dot.subgraph() as s_right:
+        s_right.attr(rank='same')
+        s_right.node('GPS', label=gps_html)
+        s_right.node('TEMP_MOT', label=temp_mot_html)
+        s_right.node('TEMP_ESC', label=temp_esc_html)
+        s_right.node('HALL', label=hall_html)
+        s_right.node('RES', label=res_html)
+        s_right.edge('GPS', 'TEMP_MOT', style='invis')
+        s_right.edge('TEMP_MOT', 'TEMP_ESC', style='invis')
+        s_right.edge('TEMP_ESC', 'HALL', style='invis')
+        s_right.edge('HALL', 'RES', style='invis')
 
-    # --- VERKABELUNG (Sternschaltung, Farbkodiert, mit Kreuzungslogik) ---
+    # --- VERKABELUNG ---
+    # :e (East) = Rechter Rand der Box
+    # :w (West) = Linker Rand der Box
+    # dir="none" = Keine Pfeilspitzen, die in die Box ragen
+
+    # LINKE SEITE -> Andocken an ESP Linke Pins (:w)
     
-    # 1. HAUPT-POWER (5V In, Dicke Leitungen)
-    dot.edge('PB:vbus:s', 'ESP:vin:n', color='red', penwidth='3', label=' Plus (5V In)')
-    dot.edge('PB:vbus:s', 'LTE:vcc:n', color='red', penwidth='3') # LTE bekommt 5V Direkt
+    # Powerbank (Liefert 5V für ESP und LTE)
+    dot.edge('PB:5v:e', 'ESP:vin:w', color='red', penwidth='2', dir='none')
+    dot.edge('PB:gnd:e', 'ESP:gnd_l1:w', color='black', penwidth='2', dir='none')
     
-    dot.edge('PB:gnd:s', 'ESP:gnd:n', color='black', penwidth='3', label=' Gemeinsame Masse (Common GND)')
-    dot.edge('PB:gnd:s', 'LTE:gnd:n', color='black', penwidth='3') # LTE bekommt GND Direkt
+    # LTE Modul (Holt 5V vom gleichen Löt-Pad wie der ESP)
+    dot.edge('LTE:vcc:e', 'ESP:vin:w', color='red', penwidth='2', dir='none')
+    dot.edge('LTE:gnd:e', 'ESP:gnd_l1:w', color='black', penwidth='2', dir='none')
+    # LTE UART (Überkreuzt)
+    dot.edge('LTE:tx:e', 'ESP:g32:w', color='purple', penwidth='2', dir='none')
+    dot.edge('LTE:rx:e', 'ESP:g33:w', color='magenta', penwidth='2', dir='none')
 
-    # 2. SENSOR POWER BUS (3.3V Out von ESP32, gestrichelte dicke Linien)
-    # 3.3V Versorgung
-    dot.edge('ESP:3v3_out:s', 'GPS:vcc:n', color='red', style='dashed', penwidth='2')
-    dot.edge('ESP:3v3_out:s', 'SD:vcc:n', color='red', style='dashed', penwidth='2')
-    dot.edge('ESP:3v3_out:s', 'TEMP_MOT:vcc:n', color='red', style='dashed', penwidth='2')
-    dot.edge('ESP:3v3_out:s', 'TEMP_ESC:vcc:n', color='red', style='dashed', penwidth='2')
-    dot.edge('ESP:3v3_out:s', 'HALL:vcc:n', color='red', style='dashed', penwidth='2')
-    
-    # GND Versorgung (Thin Common Ground)
-    dot.edge('ESP:gnd:s', 'GPS:gnd:n', color='black', penwidth='1.5')
-    dot.edge('ESP:gnd:s', 'SD:gnd:n', color='black', penwidth='1.5')
-    dot.edge('ESP:gnd:s', 'TEMP_MOT:gnd:n', color='black', penwidth='1.5')
-    dot.edge('ESP:gnd:s', 'TEMP_ESC:gnd:n', color='black', penwidth='1.5')
-    dot.edge('ESP:gnd:s', 'HALL:gnd:n', color='black', penwidth='1.5')
+    # SD Karte (SPI & 3.3V)
+    dot.edge('SD:vcc:e', 'ESP:3v3_l:w', color='red', penwidth='2', dir='none')
+    dot.edge('SD:gnd:e', 'ESP:gnd_l2:w', color='black', penwidth='2', dir='none')
+    dot.edge('SD:mosi:e', 'ESP:g23:w', color='blue', penwidth='2', dir='none')
+    dot.edge('SD:miso:e', 'ESP:g19:w', color='blue', penwidth='2', dir='none')
+    dot.edge('SD:sck:e', 'ESP:g18:w', color='blue', penwidth='2', dir='none')
+    dot.edge('SD:cs:e', 'ESP:g5:w', color='blue', penwidth='2', dir='none')
 
-    # 3. UART 1 (LTE MODEM) - Kreuzungslogik: TX -> RX1
-    # dir="none" macht es zu echten Kabeln ohne Pfeile.
-    dot.edge('ESP:g33:s', 'LTE:rx:n', color='purple', penwidth='2', label=' ESP: TX1 -> LTE: RX')
-    dot.edge('LTE:tx:n', 'ESP:g32:s', color='purple', penwidth='2', label=' LTE: TX -> ESP: RX1')
+    # RECHTE SEITE -> Andocken an ESP Rechte Pins (:e)
 
-    # 4. UART 2 (GPS MODUL) - Kreuzungslogik: TX -> RX2
-    dot.edge('ESP:g17:s', 'GPS:rx:n', color='magenta', penwidth='2', label=' ESP: TX2 -> GPS: RX')
-    dot.edge('GPS:tx:n', 'ESP:g16:s', color='magenta', penwidth='2', label=' GPS: TX -> ESP: RX2')
+    # GPS (UART Überkreuzt)
+    dot.edge('ESP:3v3_r1:e', 'GPS:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:gnd_r1:e', 'GPS:gnd:w', color='black', penwidth='2', dir='none')
+    dot.edge('ESP:g16:e', 'GPS:tx:w', color='magenta', penwidth='2', dir='none') # ESP RX <- GPS TX
+    dot.edge('ESP:g17:e', 'GPS:rx:w', color='purple', penwidth='2', dir='none')  # ESP TX -> GPS RX
 
-    # 5. SPI BUS (MicroSD)
-    dot.edge('ESP:g23:s', 'SD:mosi:n', color='blue', penwidth='1.5')
-    dot.edge('ESP:g19:s', 'SD:miso:n', color='blue', penwidth='1.5')
-    dot.edge('ESP:g18:s', 'SD:sck:n', color='blue', penwidth='1.5')
-    dot.edge('ESP:g5:s', 'SD:cs:n', color='blue', penwidth='1.5')
+    # Motor Temp
+    dot.edge('ESP:3v3_r2:e', 'TEMP_MOT:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:gnd_r2:e', 'TEMP_MOT:gnd:w', color='black', penwidth='2', dir='none')
+    dot.edge('ESP:g4:e', 'TEMP_MOT:dq:w', color='orange', penwidth='2', dir='none')
 
-    # 6. 1-WIRE BUS (Temp Sensoren, parallel geschaltet)
-    dot.edge('ESP:g4:s', 'TEMP_MOT:dq:n', color='orange', penwidth='1.5')
-    dot.edge('ESP:g4:s', 'TEMP_ESC:dq:n', color='orange', penwidth='1.5')
+    # ESC Temp
+    dot.edge('ESP:3v3_r2:e', 'TEMP_ESC:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:gnd_r2:e', 'TEMP_ESC:gnd:w', color='black', penwidth='2', dir='none')
+    dot.edge('ESP:g4:e', 'TEMP_ESC:dq:w', color='orange', penwidth='2', dir='none')
 
-    # 7. RPM SIGNAL (Hall-Sensor)
-    dot.edge('ESP:g2:s', 'HALL:out:n', color='green', penwidth='1.5')
+    # Hall Sensor
+    dot.edge('ESP:3v3_r2:e', 'HALL:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:gnd_r2:e', 'HALL:gnd:w', color='black', penwidth='2', dir='none')
+    dot.edge('ESP:g2:e', 'HALL:out:w', color='green', penwidth='2', dir='none')
 
-    # 8. DER KRITISCHE WIDERSTAND (Pull-Up, Dash-Lines)
-    # Verbindet eine Seite mit 3.3V Power Bus
-    dot.edge('ESP:3v3_out:s', 'RES:p1:n', color='red', style='dashed', penwidth='1.5')
-    # Verbindet andere Seite mit DQ Data Bus (GPIO 4)
-    dot.edge('RES:p2:n', 'ESP:g4:s', color='orange', style='dashed', penwidth='1.5', label=' Zieht 1-Wire DQ auf High')
+    # Pull-Up Widerstand
+    dot.edge('ESP:3v3_r2:e', 'RES:p1:w', color='red', style='dashed', penwidth='2', dir='none')
+    dot.edge('RES:p2:w', 'ESP:g4:e', color='orange', style='dashed', penwidth='2', dir='none')
 
-    # Rendern
     dot.render(view=False)
-    print("Professioneller, sternförmiger Lötplan generiert. Bitte öffne 'RC_Cloud_Telemetry_Schaltplan_Pro.png' links.")
+    print("Makelloser, zentrierter Cloud-Lötplan generiert! Bitte öffne 'Schaltplan_Cloud_Perfekt.png'.")
 
 if __name__ == '__main__':
     erstelle_perfekten_cloud_loetplan()
