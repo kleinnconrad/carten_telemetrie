@@ -31,7 +31,38 @@ Dieses System erfasst hochfrequente Telemetriedaten (Geschwindigkeit, Drehzahl, 
 | **DS18B20 (ESC)** | 1-Wire | `GPIO 4` | DQ (Daten) | Parallel zum Motor-Sensor schalten |
 | **A3144 Hall-Sensor**| Digital Out | `GPIO 2` | DO (Signal) | Nutzt Hardware-Interrupt (`FALLING`) |
 
-## 3. Schaltplan generieren (mit `uv`)
+## 3. Autarke Stromversorgung (Power-Management)
+
+Die zuverlässige Stromversorgung ist der kritischste Punkt dieses Cloud-Telemetrie-Systems. Das LTE-Modem (SIM7000) benötigt beim Senden im Mobilfunknetz kurzzeitig Stromspitzen von **bis zu 2 Ampere**. Würde man das Modem direkt an den 5V-Ausgang des ESP32 anschließen, käme es sofort zu einem Spannungsabfall (Brownout) und der Controller würde unkontrolliert neu starten. 
+
+Um dies zu verhindern, nutzen wir eine isolierte Parallel-Schaltung mittels eines **USB Breakout-Boards**. 
+
+### Benötigte Komponenten
+* 1x Standard USB-Powerbank (5V, min. 2.1A Output)
+* 1x USB Breakout-Board (Passend zum Anschluss der Powerbank, meist USB-A oder USB-C)
+* Kupferlitze (Empfehlung: AWG 22 für das LTE-Modul, um Kabelwiderstände zu minimieren)
+
+### Physischer Aufbau (Die 5V-Weiche)
+
+Das Breakout-Board fungiert als Y-Verteiler, der den ESP32 und das LTE-Modem unabhängig voneinander aus derselben Quelle speist:
+
+1. **VCC (5V Pluspol):**
+   * Nimm zwei rote Kabel (ein dickeres für LTE, ein Standard-Kabel für den ESP32).
+   * Verzwirble die blanken Kupferenden beider Kabel miteinander.
+   * Stecke die verzwirbelten Enden gemeinsam durch das Pad mit der Aufschrift `VCC` (oder `5V`) auf dem Breakout-Board und verlöte sie großzügig.
+   * Führe das eine Kabel an den `VIN` (oder 5V) Pin des ESP32 und das andere an den `VCC` (5V In) Pin des LTE-Moduls.
+
+2. **GND (Gemeinsame Masse):**
+   * Wiederhole den exakt gleichen Vorgang mit zwei schwarzen Kabeln am `GND`-Pad des Breakout-Boards.
+   * Führe ein Kabel an einen `GND` Pin des ESP32 und das andere an den `GND` Pin des LTE-Moduls. 
+   * *Wichtig: Alle Komponenten des Systems (Sensoren, GPS, SD-Karte) müssen zwingend über den ESP32 mit diesem GND verbunden sein (Common Ground), da sonst die serielle Datenübertragung fehlschlägt.*
+
+3. **Daten-Pins (D+ / D-):**
+   * Diese Pins auf dem Breakout-Board werden komplett ignoriert, da die USB-Verbindung rein der Stromversorgung dient.
+
+Sobald das Breakout-Board in die Powerbank gesteckt wird, fahren beide Module parallel hoch, ohne sich bei Stromspitzen gegenseitig zu beeinflussen.
+
+## 4. Schaltplan generieren (mit `uv`)
 
 Um den visuellen Lötplan als PNG zu generieren, nutzen wir Python und das Tool `uv`, um die Abhängigkeit (`graphviz`) nicht global im System installieren zu müssen.
 
@@ -53,7 +84,7 @@ Um den visuellen Lötplan als PNG zu generieren, nutzen wir Python und das Tool 
    uv run --with graphviz loetplan.py
    ```
 
-## 4. Betrieb & Datenfluss
+## 5. Betrieb & Datenfluss
 
 1. **Boot:** Nach dem Verbinden der USB-Powerbank initialisiert der ESP32 die SD-Karte und wartet auf einen GPS-Fix.
 2. **Connect:** Das Modem wählt sich ins LTE-Netz ein und baut die TCP-Verbindung zum MQTT-Broker der Cloud auf.
