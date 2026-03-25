@@ -4,11 +4,10 @@ def erstelle_perfekten_cloud_loetplan():
     dot = graphviz.Digraph('Cloud_Schaltplan', filename='Schaltplan_Cloud_Perfekt', format='png')
     
     # rankdir='LR' erzwingt den horizontalen Fluss.
-    # splines='polyline' erzwingt direkte Linien mit harten Knicken (keine Überschneidungen über Boxen).
     dot.attr(rankdir='LR', splines='polyline', nodesep='1.0', ranksep='4.0')
     dot.attr('node', shape='none', fontname='Helvetica', fontsize='12')
 
-    # 1. ESP32 ZENTRALE (Zweispaltig für strikte Links/Rechts Trennung)
+    # 1. ESP32 ZENTRALE
     esp32_html = '''<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
       <TR><TD COLSPAN="3" BGCOLOR="#add8e6"><B>NodeMCU ESP32 (Hub)</B></TD></TR>
@@ -30,7 +29,7 @@ def erstelle_perfekten_cloud_loetplan():
     pb_html = '''<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
       <TR><TD BGCOLOR="#90ee90"><B>USB Powerbank</B></TD></TR>
-      <TR><TD PORT="5v">5V (Rot)</TD></TR>
+      <TR><TD PORT="v5">5V (Rot)</TD></TR>
       <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
     </TABLE>>'''
     
@@ -115,25 +114,24 @@ def erstelle_perfekten_cloud_loetplan():
         s_right.edge('HALL', 'RES', style='invis')
 
     # --- VERKABELUNG ---
-    # :e (East) = Rechter Rand der Box
-    # :w (West) = Linker Rand der Box
-    # dir="none" = Keine Pfeilspitzen, die in die Box ragen
 
     # LINKE SEITE -> Andocken an ESP Linke Pins (:w)
     
-    # Powerbank (Liefert 5V für ESP und LTE)
-    dot.edge('PB:5v:e', 'ESP:vin:w', color='red', penwidth='2', dir='none')
-    dot.edge('PB:gnd:e', 'ESP:gnd_l1:w', color='black', penwidth='2', dir='none')
+    # 1. POWERBANK SPLITTER
+    # Powerbank -> ESP32 (Nach Rechts)
+    dot.edge('PB:v5:e', 'ESP:vin:w', color='red', penwidth='3', dir='none')
+    dot.edge('PB:gnd:e', 'ESP:gnd_l1:w', color='black', penwidth='3', dir='none')
     
-    # LTE Modul (Holt 5V vom gleichen Löt-Pad wie der ESP)
-    dot.edge('LTE:vcc:e', 'ESP:vin:w', color='red', penwidth='2', dir='none')
-    dot.edge('LTE:gnd:e', 'ESP:gnd_l1:w', color='black', penwidth='2', dir='none')
+    # Powerbank -> LTE Modul (Nach Links! Führung über die Außenseite, isoliert vom ESP)
+    dot.edge('PB:v5:w', 'LTE:vcc:w', color='red', penwidth='3', dir='none')
+    dot.edge('PB:gnd:w', 'LTE:gnd:w', color='black', penwidth='3', dir='none')
+
     # LTE UART (Überkreuzt)
     dot.edge('LTE:tx:e', 'ESP:g32:w', color='purple', penwidth='2', dir='none')
     dot.edge('LTE:rx:e', 'ESP:g33:w', color='magenta', penwidth='2', dir='none')
 
-    # SD Karte (SPI & 3.3V)
-    dot.edge('SD:vcc:e', 'ESP:3v3_l:w', color='red', penwidth='2', dir='none')
+    # SD Karte (3.3V gestrichelt vom ESP!)
+    dot.edge('SD:vcc:e', 'ESP:3v3_l:w', color='red', style='dashed', penwidth='2', dir='none')
     dot.edge('SD:gnd:e', 'ESP:gnd_l2:w', color='black', penwidth='2', dir='none')
     dot.edge('SD:mosi:e', 'ESP:g23:w', color='blue', penwidth='2', dir='none')
     dot.edge('SD:miso:e', 'ESP:g19:w', color='blue', penwidth='2', dir='none')
@@ -143,23 +141,23 @@ def erstelle_perfekten_cloud_loetplan():
     # RECHTE SEITE -> Andocken an ESP Rechte Pins (:e)
 
     # GPS (UART Überkreuzt)
-    dot.edge('ESP:3v3_r1:e', 'GPS:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:3v3_r1:e', 'GPS:vcc:w', color='red', style='dashed', penwidth='2', dir='none')
     dot.edge('ESP:gnd_r1:e', 'GPS:gnd:w', color='black', penwidth='2', dir='none')
-    dot.edge('ESP:g16:e', 'GPS:tx:w', color='magenta', penwidth='2', dir='none') # ESP RX <- GPS TX
-    dot.edge('ESP:g17:e', 'GPS:rx:w', color='purple', penwidth='2', dir='none')  # ESP TX -> GPS RX
+    dot.edge('ESP:g16:e', 'GPS:tx:w', color='magenta', penwidth='2', dir='none') 
+    dot.edge('ESP:g17:e', 'GPS:rx:w', color='purple', penwidth='2', dir='none')  
 
     # Motor Temp
-    dot.edge('ESP:3v3_r2:e', 'TEMP_MOT:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:3v3_r2:e', 'TEMP_MOT:vcc:w', color='red', style='dashed', penwidth='2', dir='none')
     dot.edge('ESP:gnd_r2:e', 'TEMP_MOT:gnd:w', color='black', penwidth='2', dir='none')
     dot.edge('ESP:g4:e', 'TEMP_MOT:dq:w', color='orange', penwidth='2', dir='none')
 
     # ESC Temp
-    dot.edge('ESP:3v3_r2:e', 'TEMP_ESC:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:3v3_r2:e', 'TEMP_ESC:vcc:w', color='red', style='dashed', penwidth='2', dir='none')
     dot.edge('ESP:gnd_r2:e', 'TEMP_ESC:gnd:w', color='black', penwidth='2', dir='none')
     dot.edge('ESP:g4:e', 'TEMP_ESC:dq:w', color='orange', penwidth='2', dir='none')
 
     # Hall Sensor
-    dot.edge('ESP:3v3_r2:e', 'HALL:vcc:w', color='red', penwidth='2', dir='none')
+    dot.edge('ESP:3v3_r2:e', 'HALL:vcc:w', color='red', style='dashed', penwidth='2', dir='none')
     dot.edge('ESP:gnd_r2:e', 'HALL:gnd:w', color='black', penwidth='2', dir='none')
     dot.edge('ESP:g2:e', 'HALL:out:w', color='green', penwidth='2', dir='none')
 
@@ -168,7 +166,7 @@ def erstelle_perfekten_cloud_loetplan():
     dot.edge('RES:p2:w', 'ESP:g4:e', color='orange', style='dashed', penwidth='2', dir='none')
 
     dot.render(view=False)
-    print("Makelloser, zentrierter Cloud-Lötplan generiert! Bitte öffne 'Schaltplan_Cloud_Perfekt.png'.")
+    print("Makelloser, zentrierter Cloud-Lötplan (mit korrigiertem Strom-Routing) generiert!")
 
 if __name__ == '__main__':
     erstelle_perfekten_cloud_loetplan()
