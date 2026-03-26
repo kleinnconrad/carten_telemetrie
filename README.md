@@ -20,6 +20,7 @@ Dieses Dokument beschreibt den Aufbau eines autarken IoT-Edge-Nodes für RC-Fahr
 | **Drehzahlsensor** | Hall-Sensor Modul (z.B. A3144) | 1 | Erfasst das Magnetfeld für RPM-Berechnung |
 | **Magnet** | Neodym-Magnet (klein, z.B. 3x2mm) | 1 | Wird auf rotierende Welle geklebt |
 | **Widerstand** | 4,7 kΩ (Kilo-Ohm) | 1 | Pull-Up-Widerstand für den 1-Wire Bus |
+| **Terminal/Breakout Board** | Anzahl der Pins muss passen | 1 | - |
 
 ---
 
