@@ -3,7 +3,7 @@
 3. **Board auswählen:** Gehe oben im Menü auf `Werkzeuge` -> `Board` -> `esp32` und wähle **ESP32 Dev Module** (oder NodeMCU-32S).
 4. **Port auswählen:** Gehe auf `Werkzeuge` -> `Port` und wähle den COM-Port aus, an dem dein ESP32 hängt (z.B. COM3 oder COM4).
 5. **Hochladen:** Klicke oben links auf den runden Button mit dem **Pfeil nach rechts** (Upload). 
-6. *Achtung:* Wenn unten in der schwarzen Konsole `Connecting...` steht, musst du bei manchen ESP32-Boards für 2 Sekunden den kleinen Knopf mit der Aufschrift **"BOOT"** auf dem Board gedrückt halten, damit er den Code annimmt!
+6. *Achtung:* Wenn unten im Terminal `Connecting...` steht, musst du bei manchen ESP32-Boards für 2 Sekunden den kleinen Knopf mit der Aufschrift **"BOOT"** auf dem Board gedrückt halten, damit er den Code annimmt!
 7. **Ergebnis prüfen:** Klicke oben rechts auf das Lupe-Symbol (**Serieller Monitor**) und stelle die Baudrate unten rechts auf **115200**, um zu lesen, was dein ESP32 dir mitteilt.
 
 ---
