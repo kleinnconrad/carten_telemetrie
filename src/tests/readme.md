@@ -209,8 +209,3 @@ void loop() {
 ```
 
 ---
-
-### Phase 5: Die Finale Hochzeit
-Sobald jeder dieser kleinen Sketche für sich allein funktioniert hat, weißt du zu 100 %, dass deine Verkabelung perfekt ist und keines deiner Bauteile defekt ist. 
-
-Jetzt kannst du alles exakt nach dem Schaltplan zusammenstecken, deinen finalen Code hochladen.
