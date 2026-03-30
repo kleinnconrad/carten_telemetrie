@@ -2,7 +2,7 @@
 
 Dieses System erfasst hochfrequente Telemetriedaten (Geschwindigkeit, Drehzahl, Temperaturen) in einem RC-Fahrzeug und streamt diese in Echtzeit über ein Mobilfunknetz (LTE) an ein Cloud-Backend (via MQTT). Die Architektur ist auf höchste Zuverlässigkeit und Systemsicherheit ausgelegt, inklusive einer vom RC-Antrieb komplett isolierten Stromversorgung.
 
-![schaltplan2](https://github.com/kleinnconrad/carten_telemetrie/blob/main/loetplan_controller/Schaltplan_Cloud.png)
+![schaltplan2](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/schaltplan.png)
 
 ## 1. System-Architektur
 
@@ -81,7 +81,7 @@ Um den visuellen Lötplan als PNG zu generieren, nutzen wir Python und das Tool 
 
 3. Skript ausführen:
    ```bash
-   uv run --with graphviz loetplan.py
+   uv run --with graphviz schaltplan.py
    ```
 
 ## 5. Betrieb
