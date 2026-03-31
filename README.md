@@ -1,6 +1,23 @@
 # carten_telemetrie
 Entwicklung einer Cloud-Telemetrie-Lösung für einen Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/kleinnconrad/RC100), um Temperatur (Motor, ESC), Drehzahl (Kardanwelle) und GPS-Daten (Geschwindigkeit, Position) in Echtzeit zu erfassen.
 
+## Inhaltsverzeichnis
+
+* [Bauanleitung: DIY Cloud-Telemetrie-System (ESP32 via LTE)](#bauanleitung-diy-cloud-telemetrie-system-esp32-via-lte)
+  * [1. Stückliste (Bill of Materials)](#1-stückliste-bill-of-materials)
+  * [2. Schaltplan & Pin-Belegung](#2-schaltplan--pin-belegung)
+    * [Stromversorgung (Isoliert via Powerbank)](#stromversorgung-isoliert-via-powerbank)
+    * [LTE-Modem (UART 1)](#lte-modem-uart-1)
+    * [GPS-Modul (UART 2)](#gps-modul-uart-2)
+    * [MicroSD-Karten-Modul (SPI-Bus)](#microsd-karten-modul-spi-bus)
+    * [Temperatursensoren (DS18B20)](#temperatursensoren-ds18b20)
+    * [Hall-Sensor (RPM)](#hall-sensor-rpm)
+  * [3. Schritt-für-Schritt Aufbau](#3-schritt-für-schritt-aufbau)
+    * [Phase 1: Vorbereitung & Software](#phase-1-vorbereitung--software)
+    * [Phase 2: Löten & Verkabeln](#phase-2-löten--verkabeln)
+    * [Phase 3: Mechanische Integration](#phase-3-mechanische-integration)
+  * [4. Betrieb & Live-Streaming](#4-betrieb--live-streaming)
+
 # Bauanleitung: DIY Cloud-Telemetrie-System (ESP32 via LTE)
 
 Dieses Dokument beschreibt den Aufbau eines autarken IoT-Edge-Nodes für RC-Fahrzeuge. Die Sensordaten werden live über das Mobilfunknetz an ein Cloud-Dashboard (via MQTT) gestreamt. Eine MicroSD-Karte dient als ausfallsicheres, lokales Backup-System. Die Stromversorgung ist zum Schutz vor Brownouts komplett von der RC-Elektronik isoliert.
