@@ -2,14 +2,17 @@ name: Fetch Reddit Feedback
 
 on:
   schedule:
-    - cron: '0 8 * * *' # Führt das Skript jeden Tag um 08:00 UTC aus
-  workflow_dispatch:    # Erlaubt es dir, den Job manuell über die GitHub UI zu starten
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
 
 jobs:
   update-markdown:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Notwendig, damit der Bot die Änderungen ins Repo pushen darf
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -21,7 +24,8 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies
-        run: pip install requests
+        # Hier installieren wir die benötigten Parser-Bibliotheken
+        run: pip install feedparser beautifulsoup4
 
       - name: Run Fetch Script
         run: python scripts/fetch_reddit.py
@@ -32,10 +36,9 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add docs/reddit_feedback.md
           
-          # Prüfen ob es überhaupt Änderungen (neue Kommentare) gibt
           if git diff --staged --quiet; then
             echo "Keine neuen Kommentare. Nichts zu committen."
           else
-            git commit -m "docs: Update Reddit feedback"
+            git commit -m "docs: Update Reddit feedback via RSS"
             git push
           fi
