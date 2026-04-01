@@ -1,6 +1,6 @@
 # Reddit Feedback: Live Telemetry System (RSS Sync)
 
-**Letzter Sync:** 01.04.2026 14:07:26
+**Letzter Sync:** 01.04.2026 17:46:01
 
 ---
 
@@ -66,6 +66,13 @@
 
 **u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odobii2/):
 > Thanks a lot for the hint with the calc logic and the pulse counter! Makes total sense. I updated the code accordingly
+
+---
+
+**u/Plastic_Fig9225** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odptjd2/):
+> With the PCNT, notice that "[t]he counter will reset to zero automatically when it crosses either the high or low limit." So another 'trick' to ensure accuracy and not lose any pulses would go like this:
+>  
+> static const int16_t COUNTER_HIGH_LIMIT = 30000; static int16_t prevPulses; // Previous pulse counter value ... int16_t currentPulses = 0; // Read counter but let it keep counting: pcnt_get_counter_value( pcnt_unit, &currentPulses ); // Calculate number of pulses since last reading: int16_t deltaPulses = currentPulses - prevPulses; // update 'previous' value prevPulses = currentPulses; // Handle PCNT overflow: if(deltaPulses < 0) { // There was a PCNT overflow between the readings. // Adjust delta for the overflow: deltaPulses = deltaPulses + COUNTER_HIGH_LIMIT + 1; }
 
 ---
 
