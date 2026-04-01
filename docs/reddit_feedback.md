@@ -1,6 +1,6 @@
 # Reddit Feedback: Live Telemetry System (RSS Sync)
 
-**Letzter Sync:** 01.04.2026 12:34:35
+**Letzter Sync:** 01.04.2026 12:55:27
 
 ---
 
@@ -76,6 +76,11 @@
 
 **u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odoesab/):
 > I'm intending to collect low frequency data (GPS, 1-Wire temperatures, and a Hall sensor) at a sample rate of 2Hz. I'm planning to then stream it over LTE via MQTT. My goal is to feed this telemetric data into a cloud. Because of that I assume that sending JSON payloads is currently the easiest route for the data ingest?! I guess I2S, DMA buffers and bit-packing are awesome suggestions but seems a bit overkill for my current 2Hz rate (on a first glance). I’ll keep the 32-bit packing trick in mind if I ever scale up to high-frequency analog sensors.
+
+---
+
+**u/G-EDM** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odoofo8/):
+> Ok. For 2hz it doesn't really need much and it could be done with DHL. :D
 
 ---
 
