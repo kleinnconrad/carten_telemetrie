@@ -1,6 +1,6 @@
 # Reddit Feedback: Live Telemetry System (RSS Sync)
 
-**Letzter Sync:** 01.04.2026 12:55:27
+**Letzter Sync:** 01.04.2026 14:07:26
 
 ---
 
@@ -91,6 +91,16 @@
 
 **u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odoftb5/):
 > Completely agree😄
+
+---
+
+**u/portugese_fruit** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odov0on/):
+> where do you take it to race it, 100kph is possible on street?
+
+---
+
+**u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odovbdp/):
+> Parking lots of big supermarkets when they are closed is the best
 
 ---
 
