@@ -1,8 +1,6 @@
 name: Fetch Reddit Feedback
 
 on:
-  schedule:
-    - cron: '0 8 * * *'
   workflow_dispatch:
 
 env:
