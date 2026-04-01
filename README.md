@@ -17,6 +17,7 @@ Entwicklung einer Cloud-Telemetrie-Lösung für einen Carten T410R [![GitHub Rep
     * [Phase 2: Löten & Verkabeln](#phase-2-löten--verkabeln)
     * [Phase 3: Mechanische Integration](#phase-3-mechanische-integration)
   * [4. Betrieb & Live-Streaming](#4-betrieb--live-streaming)
+  * [5. Reddit-Feedback-Sync](#5-reddit-feedback-sync)
 
 # Bauanleitung: DIY Cloud-Telemetrie-System (ESP32 via LTE)
 
@@ -104,3 +105,21 @@ Dieses Dokument beschreibt den Aufbau eines autarken IoT-Edge-Nodes für RC-Fahr
 1. **Einschalten:** Verbinde die USB-Powerbank. Der ESP32 fährt hoch, initialisiert die SD-Karte als Fallback und sucht nach einem GPS-Fix.
 2. **Verbindungsaufbau:** Das System wählt sich automatisch ins LTE-Netz ein und verbindet sich mit der Cloud (MQTT-Broker).
 3. **Fahrt & Analyse:** Das Auto ist bereit. Alle Daten (Position, Speed, RPM, Temps) werden mit 2 Hz als JSON-Payload in die Cloud gestreamt und können dort in Echtzeit (z.B. über Grafana) überwacht werden. Die CSV-Datei auf der SD-Karte dient lediglich als Backup.
+
+## 5. Reddit-Feedback-Sync
+
+Dieses Repository nutzt eine GitHub Action, um Community-Feedback zu dem Carten-Telemetrie Projekt aus dem zugehörigen [Reddit-Thread](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/) automatisch zu extrahieren und im Repository zu sichern. 
+
+Da die reguläre Reddit-API und direkte JSON-Abfragen oftmals Cloud-Server (wie die von GitHub Actions) blockieren, nutzt dieses Setup den öffentlichen RSS-Feed des Posts als stabilen Workaround.
+
+### Architektur & Funktionsweise
+* **Skript (`scripts/fetch_reddit.py`):** Ein Python-Skript ruft den RSS-Feed des Posts ab (`feedparser`) und bereinigt den HTML-Code der Kommentare (`beautifulsoup4`), um reinen Text zu erhalten.
+* **Automatisierung (`.github/workflows/reddit-sync.yml`):** Eine GitHub Action führt das Python-Skript automatisch jeden Tag um 08:00 UTC aus.
+* **Output:** Neue Kommentare werden als Zitate in die Datei `docs/reddit_feedback.md` geschrieben. Die Action erstellt bei Änderungen automatisch einen Commit und pusht diesen in den `main` Branch.
+
+### Manueller Sync
+Falls das Feedback außerhalb des täglichen Rhythmus sofort aktualisiert werden soll:
+1. Im Repository auf den Reiter **Actions** wechseln.
+2. In der linken Seitenleiste den Workflow **Fetch Reddit Feedback** auswählen.
+3. Auf den Button **Run workflow** klicken und den `main` Branch bestätigen.
+4. Nach Abschluss des Jobs ist die aktualisierte `reddit_feedback.md` im Ordner `docs/` zu finden.
