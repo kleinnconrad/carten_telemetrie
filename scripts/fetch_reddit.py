@@ -1,66 +1,54 @@
-import requests
-import json
-from datetime import datetime
+import feedparser
+from bs4 import BeautifulSoup
 import os
+from datetime import datetime
 
-# Die ID deines Posts aus der URL
 POST_ID = '1s9dydh'
-URL = f'https://www.reddit.com/r/esp32/comments/{POST_ID}.json'
+# Die URL mit .rss am Ende
+RSS_URL = f'https://www.reddit.com/r/esp32/comments/{POST_ID}/.rss'
 
-# Reddit blockiert Standard-Python-Requests. Ein Custom User-Agent ist Pflicht.
-headers = {'User-Agent': 'GitHubAction:carten-telemetry-feedback:v1.0'}
+# Einen eigenen User-Agent setzen, damit Reddit uns nicht blockiert
+USER_AGENT = 'GitHubAction:carten-telemetry-rss-sync:v1.0'
 
-response = requests.get(URL, headers=headers)
-if response.status_code != 200:
-    print(f"Fehler beim Abrufen der Reddit API: {response.status_code}")
+print(f"Lese RSS Feed: {RSS_URL}")
+feed = feedparser.parse(RSS_URL, agent=USER_AGENT)
+
+if feed.bozo: # bozo = 1 bedeutet, dass es einen Fehler beim Parsen gab (z.B. Blockade)
+    print("Fehler beim Abrufen des Feeds!")
     exit(1)
 
-data = response.json()
-
-# Extrahieren der Post-Metadaten und der Kommentare
-post_data = data[0]['data']['children'][0]['data']
-comments_data = data[1]['data']['children']
-
 # Markdown Header zusammenbauen
-md_content = "# Reddit Feedback: Live Telemetry System\n\n"
-md_content += f"**Original Post:** [{post_data['title']}](https://www.reddit.com{post_data['permalink']})\n"
+md_content = "# Reddit Feedback: Live Telemetry System (RSS Sync)\n\n"
 md_content += f"**Letzter Sync:** {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n\n"
 md_content += "---\n\n"
 
-# Funktion, um Kommentare und deren Threads rekursiv zu parsen
-def extract_comments(comments_list, depth=0):
-    content = ""
-    for item in comments_list:
-        # "load more comments" Platzhalter ignorieren
-        if item['kind'] == 'more':
-            continue
-            
-        comment = item['data']
-        author = comment.get('author', '[deleted]')
-        body = comment.get('body', '')
-        permalink = comment.get('permalink', '')
-        
-        # Replies visuell durch Zitat-Blöcke einrücken
-        indent = "> " * (depth + 1)
-        body_formatted = body.replace('\n', f'\n{indent}')
-        
-        content += f"**u/{author}** [schrieb](https://www.reddit.com{permalink}):\n"
-        content += f"{indent}{body_formatted}\n\n"
-        
-        # Wenn der Kommentar weitere Antworten hat, rufe die Funktion rekursiv auf
-        if 'replies' in comment and comment['replies'] != '':
-            content += extract_comments(comment['replies']['data']['children'], depth + 1)
-            
-    return content
+# Durch die Einträge iterieren. Der erste Eintrag ist oft der Post selbst, danach die Kommentare.
+for entry in feed.entries:
+    # Autor auslesen (Reddit formatiert das als /u/username)
+    author = entry.get('author', '[Unbekannt]').replace('/u/', '')
+    link = entry.get('link', '')
+    
+    # Der eigentliche Text steckt als HTML in der "summary"
+    raw_html = entry.get('summary', '')
+    
+    # BeautifulSoup nutzen, um HTML-Tags (wie <p>, <a>) zu entfernen
+    soup = BeautifulSoup(raw_html, 'html.parser')
+    
+    # Text extrahieren und Zeilenumbrüche beibehalten
+    text = soup.get_text(separator='\n').strip()
+    
+    # Markdown Blockquote Formatierung hinzufügen (> )
+    text_formatted = text.replace('\n', '\n> ')
+    
+    md_content += f"**u/{author}** [schrieb]({link}):\n"
+    md_content += f"> {text_formatted}\n\n"
+    md_content += "---\n\n"
 
-md_content += extract_comments(comments_data)
-
-# Zielordner erstellen, falls er noch nicht existiert
+# Zielordner erstellen und speichern
 os.makedirs('docs', exist_ok=True)
-
-# Markdown Datei schreiben
 file_path = 'docs/reddit_feedback.md'
+
 with open(file_path, 'w', encoding='utf-8') as f:
     f.write(md_content)
     
-print(f"Erfolgreich in {file_path} gespeichert!")
+print(f"Erfolgreich {len(feed.entries)} Einträge in {file_path} gespeichert!")
