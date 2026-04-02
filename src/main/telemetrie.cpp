@@ -102,30 +102,8 @@ void setup() {
   sensors.setWaitForConversion(false);
   sensors.requestTemperatures();
 
-  // --- HIER GEHÖREN DIE BEIDEN ZEILEN HIN ---
+  // Hall-Sensor Pullup aktivieren & Hardware-Zähler starten
   pinMode(HALL_PIN, INPUT_PULLUP); // EXTREM WICHTIG für den A3144!
-  
-  // Den PCNT Hardware-Assistenten starten
-  setupPCNT();
-  // ------------------------------------------
-
-  // SD-Karte initialisieren
-  if (SD.begin(SD_CS_PIN)) {
-    Serial.println("SD OK");
-  } else {
-    Serial.println("SD Fehler!");
-  }
-
-  // Modem Starten & Verbinden
-  Serial.println("Starte Modem...");
-  modem.restart();
-  modem.gprsConnect(apn, "", "");
-  mqtt.setServer(mqttServer, mqttPort);
-  
-  lastIngestionTime = millis();
-}
-
-  // Den PCNT Hardware-Assistenten starten
   setupPCNT();
 
   // SD-Karte initialisieren
