@@ -166,7 +166,7 @@ void loop() {
     float lat = gps.location.isValid() ? gps.location.lat() : 0.0;
     float lng = gps.location.isValid() ? gps.location.lng() : 0.0;
     
-    // --- FEHLENDER WERT WIEDER HINZUGEFÜGT ---
+    // --- FEHLENDER WERT HINZUGEFÜGT ---
     float speed = gps.speed.isValid() ? gps.speed.kmph() : 0.0; 
     
     char json[256];
