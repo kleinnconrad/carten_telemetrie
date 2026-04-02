@@ -166,9 +166,12 @@ void loop() {
     float lat = gps.location.isValid() ? gps.location.lat() : 0.0;
     float lng = gps.location.isValid() ? gps.location.lng() : 0.0;
     
+    // --- FEHLENDER WERT WIEDER HINZUGEFÜGT ---
+    float speed = gps.speed.isValid() ? gps.speed.kmph() : 0.0; 
+    
     char json[256];
-    snprintf(json, sizeof(json), "{\"rpm\":%d,\"t_m\":%.1f,\"t_e\":%.1f,\"lat\":%.6f,\"lng\":%.6f}",
-             rpm, currentTempMotor, currentTempESC, lat, lng);
+    snprintf(json, sizeof(json), "{\"rpm\":%d,\"t_m\":%.1f,\"t_e\":%.1f,\"lat\":%.6f,\"lng\":%.6f,\"spd\":%.2f}",
+             rpm, currentTempMotor, currentTempESC, lat, lng, speed);
 
     // Lokales Backup auf SD-Karte
     File dataFile = SD.open("/log.csv", FILE_APPEND);
