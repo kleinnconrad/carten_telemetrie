@@ -1,6 +1,6 @@
 # Reddit Feedback: Live Telemetry System (RSS Sync)
 
-**Letzter Sync:** 01.04.2026 17:46:01
+**Letzter Sync:** 02.04.2026 06:31:28
 
 ---
 
@@ -72,22 +72,26 @@
 **u/Plastic_Fig9225** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odptjd2/):
 > With the PCNT, notice that "[t]he counter will reset to zero automatically when it crosses either the high or low limit." So another 'trick' to ensure accuracy and not lose any pulses would go like this:
 >  
-> static const int16_t COUNTER_HIGH_LIMIT = 30000; static int16_t prevPulses; // Previous pulse counter value ... int16_t currentPulses = 0; // Read counter but let it keep counting: pcnt_get_counter_value( pcnt_unit, &currentPulses ); // Calculate number of pulses since last reading: int16_t deltaPulses = currentPulses - prevPulses; // update 'previous' value prevPulses = currentPulses; // Handle PCNT overflow: if(deltaPulses < 0) { // There was a PCNT overflow between the readings. // Adjust delta for the overflow: deltaPulses = deltaPulses + COUNTER_HIGH_LIMIT + 1; }
+> static const int16_t COUNTER_HIGH_LIMIT = 30000; static int16_t prevPulses; // Previous pulse counter value ... int16_t currentPulses = 0; // Read counter but let it keep counting: pcnt_get_counter_value( pcnt_unit, &currentPulses ); // Calculate number of pulses since last reading: int16_t deltaPulses = currentPulses - prevPulses; // update 'previous' value prevPulses = currentPulses; // Handle PCNT overflow: if(deltaPulses < 0) { // There was a PCNT overflow between the readings. // Adjust delta for the overflow: deltaPulses = deltaPulses + COUNTER_HIGH_LIMIT; }
 
 ---
 
-**u/G-EDM** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odo9ijv/):
-> What questions do you have exactly? How to stream the data? How to collect it? What type of data? Digital or Analog? As already mentioned PCNT could be of use for pulse counting while I2S ADC is the fastest option for analog data collection. To stream it back you may want to use DMA buffers and pack a batch of the data into a matching buffer the exact size of the data. If you have for example 8Bit data don't waste space and compress everything that every bit is used. On an ESP 32Bit is default and using the native size is faster then using 8 or 16Bit. If you have 8bit samples you can pack 4 of them into one 32Bit int. After packing a batch send it over the air. TL;DR DMA buffers, bit stuffing, PCNT and or I2S ADC, native 32bit int buffer for packing and bitwise operation where possible especially for packing the batch and also for math if possible. Things like (int) 10 /= 2 can be done with 10 >>= 1
+**u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odqkzd8/):
+> Thanks again. Discussed this with a LLM and it's def a very good hint. Would have never thought of this by myself. Just committed it.
 
 ---
 
-**u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odoesab/):
-> I'm intending to collect low frequency data (GPS, 1-Wire temperatures, and a Hall sensor) at a sample rate of 2Hz. I'm planning to then stream it over LTE via MQTT. My goal is to feed this telemetric data into a cloud. Because of that I assume that sending JSON payloads is currently the easiest route for the data ingest?! I guess I2S, DMA buffers and bit-packing are awesome suggestions but seems a bit overkill for my current 2Hz rate (on a first glance). I’ll keep the 32-bit packing trick in mind if I ever scale up to high-frequency analog sensors.
+**u/Plastic_Fig9225** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/ods93c3/):
+> And... one more thing I noticed: Your telemetry does not include the 
+> speed
+> ?
+>  
+> The GPS should provide a highly accurate "velocity over ground", much more accurate than you could ever infer from the position data - at least while not accelerating. You may want to include that in the telemetry data.
 
 ---
 
-**u/G-EDM** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odoofo8/):
-> Ok. For 2hz it doesn't really need much and it could be done with DHL. :D
+**u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odtzz1m/):
+> Thank you so much for pointing out. I thought it was accidently thrown out at one point... But according to the commit history it was really never implemented.
 
 ---
 
@@ -120,6 +124,21 @@
 
 **u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odohx37/):
 > Thanks! I'll have a look
+
+---
+
+**u/G-EDM** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odo9ijv/):
+> What questions do you have exactly? How to stream the data? How to collect it? What type of data? Digital or Analog? As already mentioned PCNT could be of use for pulse counting while I2S ADC is the fastest option for analog data collection. To stream it back you may want to use DMA buffers and pack a batch of the data into a matching buffer the exact size of the data. If you have for example 8Bit data don't waste space and compress everything that every bit is used. On an ESP 32Bit is default and using the native size is faster then using 8 or 16Bit. If you have 8bit samples you can pack 4 of them into one 32Bit int. After packing a batch send it over the air. TL;DR DMA buffers, bit stuffing, PCNT and or I2S ADC, native 32bit int buffer for packing and bitwise operation where possible especially for packing the batch and also for math if possible. Things like (int) 10 /= 2 can be done with 10 >>= 1
+
+---
+
+**u/Basic-You7791** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odoesab/):
+> I'm intending to collect low frequency data (GPS, 1-Wire temperatures, and a Hall sensor) at a sample rate of 2Hz. I'm planning to then stream it over LTE via MQTT. My goal is to feed this telemetric data into a cloud. Because of that I assume that sending JSON payloads is currently the easiest route for the data ingest?! I guess I2S, DMA buffers and bit-packing are awesome suggestions but seems a bit overkill for my current 2Hz rate (on a first glance). I’ll keep the 32-bit packing trick in mind if I ever scale up to high-frequency analog sensors.
+
+---
+
+**u/G-EDM** [schrieb](https://www.reddit.com/r/esp32/comments/1s9dydh/building_a_live_telemetry_system_for_my_100kmh_rc/odoofo8/):
+> Ok. For 2hz it doesn't really need much and it could be done with DHL. :D
 
 ---
 
