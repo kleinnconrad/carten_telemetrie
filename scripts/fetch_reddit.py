@@ -45,8 +45,8 @@ for entry in feed.entries:
     md_content += "---\n\n"
 
 # Zielordner erstellen und speichern
-os.makedirs('docs', exist_ok=True)
-file_path = 'docs/reddit_feedback.md'
+os.makedirs('reddit', exist_ok=True)
+file_path = 'reddit/reddit_feedback.md'
 
 with open(file_path, 'w', encoding='utf-8') as f:
     f.write(md_content)
