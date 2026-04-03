@@ -115,7 +115,7 @@ Da die reguläre Reddit-API und direkte JSON-Abfragen oftmals Cloud-Server (wie 
 ### Architektur & Funktionsweise
 * **Skript (`scripts/fetch_reddit.py`):** Ein Python-Skript ruft den RSS-Feed des Posts ab (`feedparser`) und bereinigt den HTML-Code der Kommentare (`beautifulsoup4`), um reinen Text zu erhalten.
 * **Automatisierung (`.github/workflows/reddit-sync.yml`):** Eine GitHub Action führt das Python-Skript automatisch jeden Tag um 08:00 UTC aus.
-* **Output:** Neue Kommentare werden als Zitate in die Datei `docs/reddit_feedback.md` geschrieben. Die Action erstellt bei Änderungen automatisch einen Commit und pusht diesen in den `main` Branch.
+* **Output:** Neue Kommentare werden als Zitate in die Datei `reddit/reddit_feedback.md` geschrieben. Die Action erstellt bei Änderungen automatisch einen Commit und pusht diesen in den `main` Branch.
 
 ### Manueller Sync
 Falls das Feedback außerhalb des täglichen Rhythmus sofort aktualisiert werden soll:
