@@ -9,7 +9,7 @@
 | **Drehzahlsensor** | Joy-IT Hall-Sensor Modul (KY-003) | 1 | Impulsgeber für die Drehzahl. |
 | **Magnet** | TRU Components Neodym-Magnet (3x2mm) | 1 | Impulsgeber an der Welle. |
 | **Widerstand** | TRU Components 4,7 kΩ (0,25W) | 1 | Pull-Up für den Temperatur-Bus. |
-| **Powerbank** | Intenso / Voltcraft Mini Powerbank | 1 | Mobile 5V Spannungsquelle. |
+| **Powerbank** | Intenso xs5000/ Voltcraft Mini Powerbank | 1 | Mobile 5V Spannungsquelle. |
 | **USB-Versorgung** | Standard USB-A Ladekabel | 1 | **WAGO-Methode:** Stecker abschneiden für 5V/GND. |
 | **Netz-Verteiler** | WAGO 221-415 (5-Leiter-Klemme) | 3 | **WAGO-Methode:** Je eine für 5V, GND und 3.3V. |
 | **Verbindung** | TRU Comp. Jumper-Kabel (M/M & F/F) | 1 Set | Brücken zwischen Modulen und Terminal Board. |
