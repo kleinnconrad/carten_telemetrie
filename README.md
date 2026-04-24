@@ -1,7 +1,7 @@
 # carten_telemetrie
 Entwicklung einer Telemetrie-Lösung für einen Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/kleinnconrad/RC100), um Temperatur (Motor, ESC), Drehzahl (Kardanwelle) und GPS-Daten (Geschwindigkeit, Position) hochfrequent zu erfassen.
 
-Das System kann in zwei Architektur-Varianten aufgebaut werden: Als **Cloud-Version** (Live-Streaming via LTE) oder als gewichtsoptimierte **Offline-Version** (Lokales Logging via RC-Empfänger).
+Das System kann in zwei Architektur-Varianten aufgebaut werden: Als **Cloud-Version** (Live-Streaming via LTE) oder als gewichtsoptimierte und kostengünstige **Offline-Version** (Lokales Logging via RC-Empfänger).
 
 ## Inhaltsverzeichnis
 
