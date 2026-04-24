@@ -1,0 +1,104 @@
+digraph Offline_Schaltplan {
+	nodesep=1.0 rankdir=LR ranksep=4.0 splines=polyline
+	node [fontname=Helvetica fontsize=12 shape=none]
+	ESP [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD COLSPAN="3" BGCOLOR="#add8e6"><B>ESP32 30-Pin (FREENOVE Board)</B></TD></TR>
+      <TR><TD BGCOLOR="#d3d3d3"><B>Linke Pins</B></TD><TD BGCOLOR="#e0e0e0" ROWSPAN="11"> ESP32 <br/> Core </TD><TD BGCOLOR="#d3d3d3"><B>Rechte Pins</B></TD></TR>
+      <TR><TD PORT="vin">VIN (5V In)</TD><TD PORT="3v3">3V3 (3.3V Out)</TD></TR>
+      <TR><TD PORT="gnd_l">GND (Masse)</TD><TD PORT="gnd_r">GND (Masse)</TD></TR>
+      <TR><TD>---</TD><TD PORT="d2">D2 (Hall-Sensor)</TD></TR>
+      <TR><TD>---</TD><TD PORT="d4">D4 (1-Wire Temp)</TD></TR>
+      <TR><TD>---</TD><TD PORT="rx2">RX2 / GPIO16</TD></TR>
+      <TR><TD>---</TD><TD PORT="tx2">TX2 / GPIO17</TD></TR>
+      <TR><TD>---</TD><TD PORT="d5">D5 (SD CS)</TD></TR>
+      <TR><TD>---</TD><TD PORT="d18">D18 (SD SCK)</TD></TR>
+      <TR><TD>---</TD><TD PORT="d19">D19 (SD MISO)</TD></TR>
+      <TR><TD>---</TD><TD PORT="d23">D23 (SD MOSI)</TD></TR>
+    </TABLE>>]
+	{
+		rank=same
+		RX [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#90ee90"><B>RC Empfänger (BEC)</B></TD></TR>
+      <TR><TD PORT="v5">5V (Rot)</TD></TR>
+      <TR><TD PORT="gnd">GND (Schwarz)</TD></TR>
+      <TR><TD PORT="signal">Signal (Nicht genutzt)</TD></TR>
+    </TABLE>>]
+	}
+	{
+		rank=same
+		SD [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (Zwingend an 5V!)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="mosi">MOSI</TD></TR>
+      <TR><TD PORT="miso">MISO</TD></TR>
+      <TR><TD PORT="sck">SCK</TD></TR>
+      <TR><TD PORT="cs">CS</TD></TR>
+    </TABLE>>]
+		GPS [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#87cefa"><B>GPS BN-220</B></TD></TR>
+      <TR><TD PORT="vcc">VCC (3.3V via WAGO)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="tx">TX (Senden)</TD></TR>
+      <TR><TD PORT="rx">RX (Empfang)</TD></TR>
+    </TABLE>>]
+		TEMP_MOT [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 (Motor)</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (3.3V via WAGO)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+    </TABLE>>]
+		TEMP_ESC [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffffe0"><B>DS18B20 (ESC)</B></TD></TR>
+      <TR><TD PORT="vcc">VDD (3.3V via WAGO)</TD></TR>
+      <TR><TD PORT="gnd">GND</TD></TR>
+      <TR><TD PORT="dq">Data (Gelb/Blau)</TD></TR>
+    </TABLE>>]
+		HALL [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
+      <TR><TD BGCOLOR="#ffb6c1"><B>A3144 Hall-Sensor</B></TD></TR>
+      <TR><TD PORT="vcc">1: VCC (3.3V via WAGO)</TD></TR>
+      <TR><TD PORT="gnd">2: GND</TD></TR>
+      <TR><TD PORT="out">3: DOUT (Signal)</TD></TR>
+    </TABLE>>]
+		RES [label=<
+    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD COLSPAN="2" BGCOLOR="white"><B>4.7 kΩ Pull-Up</B></TD></TR>
+      <TR><TD PORT="p1">Zu 3.3V WAGO</TD><TD PORT="p2">Zu GPIO 4</TD></TR>
+    </TABLE>>]
+		SD -> GPS [style=invis]
+		GPS -> TEMP_MOT [style=invis]
+		TEMP_MOT -> TEMP_ESC [style=invis]
+		TEMP_ESC -> HALL [style=invis]
+		HALL -> RES [style=invis]
+	}
+	RX:v5:e -> ESP:vin:w [color=red dir=none penwidth=3]
+	RX:gnd:e -> ESP:gnd_l:w [color=black dir=none penwidth=3]
+	ESP:vin -> SD:vcc:w [color=red dir=none penwidth=3]
+	ESP:gnd_r:e -> SD:gnd:w [color=black dir=none penwidth=2]
+	ESP:d23:e -> SD:mosi:w [color=blue dir=none penwidth=2]
+	ESP:d19:e -> SD:miso:w [color=blue dir=none penwidth=2]
+	ESP:d18:e -> SD:sck:w [color=blue dir=none penwidth=2]
+	ESP:d5:e -> SD:cs:w [color=blue dir=none penwidth=2]
+	ESP:"3v3":e -> GPS:vcc:w [color=red dir=none penwidth=2 style=dashed]
+	ESP:gnd_r:e -> GPS:gnd:w [color=black dir=none penwidth=2]
+	ESP:rx2:e -> GPS:tx:w [color=magenta dir=none penwidth=2]
+	ESP:tx2:e -> GPS:rx:w [color=purple dir=none penwidth=2]
+	ESP:"3v3":e -> TEMP_MOT:vcc:w [color=red dir=none penwidth=2 style=dashed]
+	ESP:gnd_r:e -> TEMP_MOT:gnd:w [color=black dir=none penwidth=2]
+	ESP:d4:e -> TEMP_MOT:dq:w [color=orange dir=none penwidth=2]
+	ESP:"3v3":e -> TEMP_ESC:vcc:w [color=red dir=none penwidth=2 style=dashed]
+	ESP:gnd_r:e -> TEMP_ESC:gnd:w [color=black dir=none penwidth=2]
+	ESP:d4:e -> TEMP_ESC:dq:w [color=orange dir=none penwidth=2]
+	ESP:"3v3":e -> HALL:vcc:w [color=red dir=none penwidth=2 style=dashed]
+	ESP:gnd_r:e -> HALL:gnd:w [color=black dir=none penwidth=2]
+	ESP:d2:e -> HALL:out:w [color=green dir=none penwidth=2]
+	ESP:"3v3":e -> RES:p1:w [color=red dir=none penwidth=2 style=dashed]
+	RES:p2:w -> ESP:d4:e [color=orange dir=none penwidth=2 style=dashed]
+}
