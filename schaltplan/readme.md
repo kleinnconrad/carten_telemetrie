@@ -10,9 +10,9 @@ Beide Architekturen sind auf höchste Zuverlässigkeit bei Fahrten mit bis zu 10
 Nutzt ein LTE-Modul und eine isolierte Powerbank für Live-Metriken.
 ![Schaltplan Cloud](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/schaltplan.png)
 
-### Variante B: Offline (Gewichtsoptimiert & Lokales Logging)
+### Variante B: Offline 30 PIN (Gewichtsoptimiert & Lokales Logging)
 Verzichtet auf LTE und Powerbank. Stromversorgung erfolgt direkt über das RC-Auto.
-![Schaltplan Offline](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/schaltplan_offline.png)
+![Schaltplan Offline](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/Schaltplan_Offline_30Pin.png)
 
 ---
 
