@@ -6,7 +6,7 @@ Dieser Ordner enthält die 3D-Druck-Dateien (STL) für eine ESP32-basierte Senso
 
 | Dateiname | Beschreibung | Herkunft |
 | :--- | :--- | :--- |
-| `sensor_board.stl` | Maßgeschneiderte Trägerplatte zur sicheren Montage der Peripherie. Bietet dedizierten Platz für 2x Temperatur-Sensoren, 1x Micro-SD-Modul und 1x GPS-Modul. | Eigenentwicklung |
+| `sensor_board_.stl` | Maßgeschneiderte Trägerplatte zur sicheren Montage der Peripherie. Bietet dedizierten Platz für 2x Temperatur-Sensoren, 1x Micro-SD-Modul und 1x GPS-Modul. | Eigenentwicklung |
 | `esp32-30pin-breakoutboard-case.stl` | Hauptgehäuse, passend für ein ESP32 Development Board (30 Pins) in Kombination mit einem Terminal-Breakout-Board. | Extern (Printables) |
 | `esp32-30pin-breakoutboard-lid.stl` | Passgenauer Deckel (Snap-Fit) für das ESP32-Gehäuse. | Extern (Printables) |
 
