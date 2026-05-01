@@ -20,7 +20,7 @@ Die Konstruktion ist für die Unterbringung der folgenden Hardware-Komponenten a
 * **Speicher:** 1x Micro-SD-Karten-Modul (zur Datenaufzeichnung/Logging)
 * **Ortung:** 1x GPS-Modul
 
-## 🔗 Quellen und Danksagungen
+## 🔗 Quellen
 
 Während das `sensor_board.stl` eine Eigenentwicklung für dieses spezifische Projekt ist, stammen die Gehäuseteile für den ESP32 (Case und Lid) aus der 3D-Druck-Community. 
 
