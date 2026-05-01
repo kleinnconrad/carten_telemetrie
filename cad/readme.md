@@ -22,8 +22,8 @@ Die Konstruktion ist für die Unterbringung der folgenden Hardware-Komponenten a
 
 ## 🔗 Quellen
 
-Während das `sensor_board.stl` eine Eigenentwicklung für dieses spezifische Projekt ist, stammen die Gehäuseteile für den ESP32 (Case und Lid) aus der 3D-Druck-Community. 
+Während das `sensor_board_.stl` eine Eigenentwicklung für dieses spezifische Projekt ist, stammen die Gehäuseteile für den ESP32 (Case und Lid) aus der 3D-Druck-Community. 
 
-Ein großer Dank geht an den ursprünglichen Designer des ESP32-Gehäuses:
+Ursprünglicher Designer des ESP32-Gehäuses:
 * **Modell:** [ESP32 30-pin breakout board case + snap fit lid](https://www.printables.com/model/856471-esp32-30-pin-breakout-board-case-snap-fit-lid/files)
 * **Ersteller:** [@Goofee_2018635 auf Printables](https://www.printables.com/@Goofee_2018635)
