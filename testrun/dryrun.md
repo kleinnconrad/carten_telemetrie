@@ -8,7 +8,7 @@ Beide Temperatursensoren (Motor/ESC), das GPS-Modul sowie das MicroSD-Modul wurd
 - **Datenintegrität:** Die Datei `log.csv` wurde korrekt angelegt.
 - **Plausibilität:** Die aufgezeichneten Temperatur- und GPS-Werte entsprechen den Erwartungen und sind konsistent.
 
-**Status:** Erfogreich abgeschlossen.
+**Status:** Erfolgreich abgeschlossen.
 
-<img src="[https://github.com/kleinnconrad/carten_telemetrie/blob/main/build/PXL_20260505_152613322.jpg?raw=true](https://github.com/kleinnconrad/carten_telemetrie/blob/main/build/PXL_20260505_152613322.jpg?raw=true)" width="50%" alt="Hardware Test Setup 1">
-<img src="[https://github.com/kleinnconrad/carten_telemetrie/blob/main/build/PXL_20260505_152628893.jpg?raw=true](https://github.com/kleinnconrad/carten_telemetrie/blob/main/build/PXL_20260505_152628893.jpg?raw=true)" width="50%" alt="Hardware Test Setup 2">
+<img src="https://raw.githubusercontent.com/kleinnconrad/carten_telemetrie/main/build/PXL_20260505_152613322.jpg" width="50%" alt="Hardware Test Setup 1">
+<img src="https://raw.githubusercontent.com/kleinnconrad/carten_telemetrie/main/build/PXL_20260505_152628893.jpg" width="50%" alt="Hardware Test Setup 2">
