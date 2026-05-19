@@ -1,4 +1,4 @@
-### Testprotokoll #02: In-Vehicle Integration & Statischer Test
+### Testprotokoll #01: In-Vehicle Integration & Statischer Test
 
 **Beschreibung:**
 Ein erster Systemtest der Telemetrie-Einheit wurde direkt im Fahrzeug durchgeführt. Die Stromversorgung des ESP32-Setups erfolgte dabei erfolgreich über den BEC-Port des RC-Empfängers (5V). Das Fahrzeug wurde für den Testzeitraum von ca. 3 Minuten stationär an einem Fenster platziert, um den GPS-Empfang zu ermöglichen, ohne das Chassis zu bewegen.
