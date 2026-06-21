@@ -16,7 +16,6 @@ Spannungsversorgung erfolgt über den RC-Empfänger.
 | Temperatursensor | Joy-IT DS18B20 | 2 | Temperaturmessung Motor und Regler |
 | Drehzahlsensor | Joy-IT Hall-Sensor Modul (KY-003) | 1 | Impulsgeber |
 | Magnet | Neodym-Magnet (3x2mm) | 1 | Impulsgeber |
-| Widerstand | 4,7 kΩ (0,25W) | 1 | Pull-Up für Temperatur-Bus |
 
 ## 2. Werkzeug und Verbindungsmaterial
 | Komponente | Typ | Anz. | Zweck |

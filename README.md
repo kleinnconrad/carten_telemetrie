@@ -29,7 +29,6 @@ Architektur-Variante:
 | Temperatursensor | DS18B20 | 2x 1-Wire Sensoren (Motor, ESC) |
 | Drehzahlsensor | Hall-Sensor Modul (A3144) | Erfassung des Magnetfelds |
 | Magnet | Neodym-Magnet (3x2mm) | Montage an Kardanwelle |
-| Widerstand | 4,7 kΩ | Pull-Up für 1-Wire Bus |
 | Stromversorgung | 3-Pin Servokabel | 5V Spannungsversorgung über RC-Empfänger |
 
 ## 3. Schaltplan und Pin-Belegung
@@ -42,7 +41,7 @@ Alle Komponenten nutzen eine gemeinsame Masse (GND). Serielle Verbindungen (UART
 | GPS Modul| UART 2 | `GPIO 16` (RX2) | TX | VCC an 3.3V ESP32 |
 | | | `GPIO 17` (TX2) | RX | |
 | MicroSD-Modul | SPI | `GPIO 23`, `19`, `18`, `5` | MOSI, MISO, SCK, CS | VCC an 3.3V ESP32 |
-| DS18B20 | 1-Wire | `GPIO 4` | DQ (Daten) | Parallelschaltung, 4.7kΩ Pull-Up an 3.3V |
+| DS18B20 | 1-Wire | `GPIO 4` | DQ (Daten) | Parallelschaltung |
 | A3144 Hall-Sensor| Dig. Out | `GPIO 2` | DO (Signal) | ESP32 PCNT Hardware-Counter |
 
 ## 4. Aufbau
@@ -54,7 +53,6 @@ Alle Komponenten nutzen eine gemeinsame Masse (GND). Serielle Verbindungen (UART
 ### 4.2 Verkabelung und Energieversorgung
 * Servokabel mit `VIN` und `GND` des ESP32 verlöten. Anschluss an freien Kanal des RC-Empfängers.
 * Verbindung von GPS, SD-Modul, Hall-Sensor und Temperatursensoren gemäß Pin-Mapping.
-* Einbau des 4,7 kΩ Widerstands zwischen 3.3V-Leitung und Datenleitung der Temperatursensoren.
 * Isolierung der Lötstellen.
 
 ### 4.3 Mechanische Integration

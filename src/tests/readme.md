@@ -42,7 +42,7 @@ void loop() {
 ```
 
 ## 3. Phase 2A: Temperatursensor
-Prüfung des OneWire-Busses. Anschluss eines DS18B20-Sensors (Pin 4, inkl. 4.7k Ohm Pull-Up).
+Prüfung des OneWire-Busses. Anschluss eines DS18B20-Sensors (Pin 4).
 
 ```cpp
 #include <Arduino.h>

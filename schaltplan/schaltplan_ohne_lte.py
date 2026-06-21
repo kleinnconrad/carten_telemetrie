@@ -42,7 +42,7 @@ def erstelle_perfekten_offline_loetplan_30pin():
     sd_html = '''<
     <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="6">
       <TR><TD BGCOLOR="#d3d3d3"><B>MicroSD (SPI)</B></TD></TR>
-      <TR><TD PORT="vcc">VCC (Zwingend an 5V!)</TD></TR>
+      <TR><TD PORT="vcc">VCC (3.3V)</TD></TR>
       <TR><TD PORT="gnd">GND</TD></TR>
       <TR><TD PORT="mosi">MOSI</TD></TR>
       <TR><TD PORT="miso">MISO</TD></TR>
@@ -83,12 +83,6 @@ def erstelle_perfekten_offline_loetplan_30pin():
       <TR><TD PORT="out">3: DOUT (Signal)</TD></TR>
     </TABLE>>'''
 
-    res_html = '''<
-    <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-      <TR><TD COLSPAN="2" BGCOLOR="white"><B>4.7 kΩ Pull-Up</B></TD></TR>
-      <TR><TD PORT="p1">Zu 3.3V WAGO</TD><TD PORT="p2">Zu GPIO 4</TD></TR>
-    </TABLE>>'''
-
     with dot.subgraph() as s_right:
         s_right.attr(rank='same')
         s_right.node('SD', label=sd_html)
@@ -96,12 +90,10 @@ def erstelle_perfekten_offline_loetplan_30pin():
         s_right.node('TEMP_MOT', label=temp_mot_html)
         s_right.node('TEMP_ESC', label=temp_esc_html)
         s_right.node('HALL', label=hall_html)
-        s_right.node('RES', label=res_html)
         s_right.edge('SD', 'GPS', style='invis')
         s_right.edge('GPS', 'TEMP_MOT', style='invis')
         s_right.edge('TEMP_MOT', 'TEMP_ESC', style='invis')
         s_right.edge('TEMP_ESC', 'HALL', style='invis')
-        s_right.edge('HALL', 'RES', style='invis')
 
     # --- VERKABELUNG ---
 
@@ -111,8 +103,8 @@ def erstelle_perfekten_offline_loetplan_30pin():
     
     # RECHTE SEITE -> Daten & 3.3V Routing
     
-    # SD Karte (ACHTUNG: VCC geht an 5V / VIN!)
-    dot.edge('ESP:vin', 'SD:vcc:w', color='red', penwidth='3', dir='none')
+    # SD Karte (VCC an 3.3V)
+    dot.edge('ESP:3v3:e', 'SD:vcc:w', color='red', style='dashed', penwidth='2', dir='none')
     dot.edge('ESP:gnd_r:e', 'SD:gnd:w', color='black', penwidth='2', dir='none')
     dot.edge('ESP:d23:e', 'SD:mosi:w', color='blue', penwidth='2', dir='none')
     dot.edge('ESP:d19:e', 'SD:miso:w', color='blue', penwidth='2', dir='none')
@@ -140,12 +132,8 @@ def erstelle_perfekten_offline_loetplan_30pin():
     dot.edge('ESP:gnd_r:e', 'HALL:gnd:w', color='black', penwidth='2', dir='none')
     dot.edge('ESP:d2:e', 'HALL:out:w', color='green', penwidth='2', dir='none')
 
-    # Pull-Up Widerstand
-    dot.edge('ESP:3v3:e', 'RES:p1:w', color='red', style='dashed', penwidth='2', dir='none')
-    dot.edge('RES:p2:w', 'ESP:d4:e', color='orange', style='dashed', penwidth='2', dir='none')
-
     dot.render(view=False)
-    print("Aktualisierter 30-Pin Lötplan (SD-Karte an 5V!) generiert!")
+    print("Aktualisierter 30-Pin Lötplan (SD-Karte an 3.3V!) generiert!")
 
 if __name__ == '__main__':
     erstelle_perfekten_offline_loetplan_30pin()
