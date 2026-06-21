@@ -31,6 +31,7 @@ Für die Nachkonstruktion sind zwingend die folgenden Bauteile oder äquivalente
 | Komponente | Spezifikation / Typ | Funktion im System |
 | :--- | :--- | :--- |
 | Microcontroller | ESP32 Dev Board (30-Pin Variante, z.B. NodeMCU) | Zentrale Ingestion und Verarbeitung der Sensorik |
+| Erweiterungsboard | ESP32 Terminal Breakout Board (30-Pin) | Sichere Kontaktierung der Jumper-Kabel ohne Löten |
 | GPS-Modul | BN-220 (u-blox M8N) | Bereitstellung der Geodaten (Baudrate 9600) |
 | Speichermodul | MicroSD-Karten-Modul (SPI) | Persistenter Datenspeicher (zwingend 3.3V Logik) |
 | Temperatursensor | DS18B20 (TO-92 oder wasserdicht) | 2x Sensoren zur Temperaturüberwachung (Motor, ESC) |
@@ -61,9 +62,10 @@ Alle Hardwarekomponenten nutzen eine gemeinsame Masse (GND) zur Vermeidung von F
 * **Flash-Vorgang:** Die Firmware ist via USB-Schnittstelle auf den ESP32 zu überspielen. Bei Boot-Problemen ist der serielle Output (`115200` Baud) auf Initialisierungsfehler (z.B. SD-Karte nicht gefunden) zu prüfen.
 
 ### 4.2 Elektrische Verkabelung
-* Das Servokabel ist polungsrichtig mit `VIN` (5V) und `GND` des ESP32 zu verlöten und an einen freien Port des RC-Empfängers anzuschließen.
-* Die Verbindung von GPS, SD-Modul, Hall-Sensor und Temperatursensoren ist zwingend gemäß der dokumentierten Pin-Belegung vorzunehmen.
-* Sämtliche Lötstellen sind durch Schrumpfschläuche zur Vermeidung von Kurzschlüssen bei Vibrationen zu isolieren.
+* Der ESP32 ist auf das Terminal-Breakout-Board aufzustecken. Alle Jumper-Kabel werden zwingend in den Schraubklemmen des Breakout-Boards fixiert, um vibrationsresistente Verbindungen zu gewährleisten.
+* Das Servokabel ist polungsrichtig über Jumper-Kabel mit den `VIN`- (5V) und `GND`-Klemmen zu verschrauben und an einen freien Port des RC-Empfängers anzuschließen.
+* Die Verbindung von GPS, SD-Modul, Hall-Sensor und Temperatursensoren ist gemäß der dokumentierten Pin-Belegung mittels Jumper-Kabeln und den Klemmen des Breakout-Boards vorzunehmen.
+* Bei Mehrfachbelegungen (z. B. der Zusammenführung mehrerer GND- oder 3.3V-Leitungen der Sensoren) sind WAGO-Klemmen einzusetzen. Zur Vermeidung von Wackelkontakten bei Vibrationen ist der korrekte Sitz in den Klemmen zu prüfen.
 
 ### 4.3 Mechanische Integration
 * **Zentraleinheit:** Die Befestigung des ESP32-Gehäuses im Chassis erfolgt über verschraubte Trägerplatten oder Klettband.
