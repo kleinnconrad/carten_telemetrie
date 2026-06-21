@@ -1,111 +1,101 @@
 # RC-Telemetrie-System
 
-Dieses System erfasst hochfrequente Telemetriedaten (Geschwindigkeit, Drehzahl, Temperaturen) in einem RC-Fahrzeug. Das Projekt kann in zwei Varianten aufgebaut werden: Als vernetzte **Cloud-Version** (Live-Streaming über Mobilfunk) oder als gewichtsoptimierte **Offline-Version** (lokales Data-Logging über den RC-Empfänger). 
+## Inhaltsverzeichnis
+* [1. System-Architektur](#1-system-architektur)
+* [2. Pin-Mapping](#2-pin-mapping)
+  * [2.1 Variante A: Cloud (LTE)](#21-variante-a-cloud-lte)
+  * [2.2 Variante B: Offline (Lokales Logging)](#22-variante-b-offline-lokales-logging)
+* [3. Stromversorgung](#3-stromversorgung)
+  * [3.1 Variante A: Cloud](#31-variante-a-cloud)
+  * [3.2 Variante B: Offline](#32-variante-b-offline)
+* [4. Schaltplan Generierung](#4-schaltplan-generierung)
+* [5. Betrieb](#5-betrieb)
+  * [5.1 Cloud-Workflow](#51-cloud-workflow)
+  * [5.2 Offline-Workflow](#52-offline-workflow)
 
-Beide Architekturen sind auf höchste Zuverlässigkeit bei Fahrten mit bis zu 100 km/h ausgelegt.
+Dieses System erfasst Telemetriedaten (Geschwindigkeit, Drehzahl, Temperaturen) in einem RC-Fahrzeug. Es existieren zwei Varianten:
+* Cloud-Version: Live-Streaming über Mobilfunk.
+* Offline-Version: Lokales Data-Logging.
 
-## Schaltpläne
-
-### Variante A: Cloud (LTE & Live-Streaming)
-Nutzt ein LTE-Modul und eine isolierte Powerbank für Live-Metriken.
-![Schaltplan Cloud](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/schaltplan.png)
-
-### Variante B: Offline 30 PIN (Gewichtsoptimiert & Lokales Logging)
-Verzichtet auf LTE und Powerbank. Stromversorgung erfolgt direkt über das RC-Auto.
-![Schaltplan Offline](https://github.com/kleinnconrad/carten_telemetrie/blob/main/schaltplan/Schaltplan_Offline_30Pin.png)
-
----
+Beide Architekturen sind für den Betrieb in RC-Fahrzeugen ausgelegt.
 
 ## 1. System-Architektur
+* Betriebsmodi:
+  * Cloud-Modus: Datenübertragung als JSON-Payloads via MQTT über ein SIM7000G LTE-Modul.
+  * Offline-Modus: Batch-Logging auf MicroSD-Karte.
+* GPS-Tracking: Ein GPS-Modul liefert Geodaten und Geschwindigkeitswerte via NMEA-Protokoll (Hardware-UART).
+* Logging: Die MicroSD-Karte dient als Fallback in der Cloud-Variante und als primärer Speicher in der Offline-Variante.
+* Sensor-Auslesen: Die Erfassung erfolgt asynchron. Impulse des Hall-Sensors werden über einen Hardware-Zähler (PCNT) registriert.
 
-* **Zwei Betriebsmodi:** * *Cloud-Modus:* Daten werden asynchron als JSON-Payloads via MQTT über ein SIM7000G LTE-Modul an die Cloud gesendet.
-  * *Offline-Modus:* Reines Batch-Logging auf die MicroSD-Karte. Massive Gewichtsersparnis durch Wegfall von Modem und Powerbank.
-* **GPS Tracking:** Ein dediziertes GPS-Modul liefert echte Geodaten und hochpräzise Geschwindigkeitswerte (Doppler-Effekt) via NMEA-Protokoll (Hardware-UART).
-* **Ausfallsicheres Logging:** Die MicroSD-Karte fungiert über den SPI-Bus in der Cloud-Variante als Fallback und in der Offline-Variante als primärer Datenspeicher.
-* **Asynchrones Sensor-Auslesen:** Zeitintensive Operationen (wie die 750ms Wandlungszeit der DS18B20 1-Wire Sensoren) blockieren niemals den Main-Loop. Pulse des Hall-Sensors werden über einen dedizierten Hardware-Zähler (PCNT) verlustfrei erfasst.
+## 2. Pin-Mapping
+Alle Komponenten benötigen eine gemeinsame Masse (GND). Serielle Verbindungen erfordern gekreuzte Leitungen (TX an RX, RX an TX).
 
-## 2. Pin-Mapping (Verkabelung)
-
-**WICHTIG:** Alle Komponenten müssen sich eine gemeinsame Masse (**GND**) teilen. RX- und TX-Leitungen bei seriellen Verbindungen müssen immer überkreuzt angeschlossen werden (TX an RX, RX an TX).
-
-### Variante A: Cloud (LTE)
+### 2.1 Variante A: Cloud (LTE)
 | Komponente | Interface | ESP32 Pin | Sensor Pin | Bemerkung |
 | :--- | :--- | :--- | :--- | :--- |
-| **USB Powerbank** | Power | `VIN` | 5V Out | Speist ESP32 und LTE parallel |
-| **LTE Modul (SIM7000)** | UART 1 | `GPIO 32` (RX1) | TX | VCC direkt an 5V Powerbank! |
+| USB Powerbank | Power | `VIN` | 5V Out | Versorgung für ESP32 und LTE |
+| LTE Modul | UART 1 | `GPIO 32` (RX1) | TX | VCC an 5V Powerbank |
 | | | `GPIO 33` (TX1) | RX | |
-| **GPS Modul (BN-220)**| UART 2 | `GPIO 16` (RX2) | TX | VCC an 3.3V vom ESP32 |
+| GPS Modul | UART 2 | `GPIO 16` (RX2) | TX | VCC an 3.3V ESP32 |
 | | | `GPIO 17` (TX2) | RX | |
-| **MicroSD-Modul** | SPI | `GPIO 23` | MOSI | |
-| | | `GPIO 19` | MISO | |
-| | | `GPIO 18` | SCK | |
-| | | `GPIO 5` | CS | |
-| **DS18B20 (Motor)** | 1-Wire | `GPIO 4` | DQ (Daten) | Benötigt 4.7kΩ Pull-Up an 3.3V |
-| **DS18B20 (ESC)** | 1-Wire | `GPIO 4` | DQ (Daten) | Parallel zum Motor-Sensor schalten |
-| **A3144 Hall-Sensor**| Digital Out | `GPIO 2` | DO (Signal) | Nutzt internen Pull-Up & PCNT |
+| MicroSD-Modul | SPI | `GPIO 23`, `19`, `18`, `5` | MOSI, MISO, SCK, CS | |
+| DS18B20 (Motor)| 1-Wire | `GPIO 4` | DQ | 4.7kΩ Pull-Up an 3.3V |
+| DS18B20 (ESC)| 1-Wire | `GPIO 4` | DQ | Parallelschaltung |
+| A3144 Hall-Sensor| Digital Out | `GPIO 2` | DO | PCNT-Nutzung |
 
-### Variante B: Offline (Lokales Logging)
+### 2.2 Variante B: Offline (Lokales Logging)
 | Komponente | Interface | ESP32 Pin | Sensor Pin | Bemerkung |
 | :--- | :--- | :--- | :--- | :--- |
-| **RC-Empfänger (BEC)**| Power | `VIN` | 5V (Rot) | Stromversorgung direkt über ESC/Empfänger |
+| RC-Empfänger | Power | `VIN` | 5V (Rot) | Versorgung über ESC/Empfänger |
 | | | `GND` | GND (Schwarz)| Gemeinsame Masse |
-| **GPS Modul (BN-220)**| UART 2 | `GPIO 16` (RX2) | TX | VCC an 3.3V vom ESP32 |
+| GPS Modul | UART 2 | `GPIO 16` (RX2) | TX | VCC an 3.3V ESP32 |
 | | | `GPIO 17` (TX2) | RX | |
-| **MicroSD-Modul** | SPI | `GPIO 23` | MOSI | |
-| | | `GPIO 19` | MISO | |
-| | | `GPIO 18` | SCK | |
-| | | `GPIO 5` | CS | |
-| **DS18B20 (Motor)** | 1-Wire | `GPIO 4` | DQ (Daten) | Benötigt 4.7kΩ Pull-Up an 3.3V |
-| **DS18B20 (ESC)** | 1-Wire | `GPIO 4` | DQ (Daten) | Parallel zum Motor-Sensor schalten |
-| **A3144 Hall-Sensor**| Digital Out | `GPIO 2` | DO (Signal) | Nutzt internen Pull-Up & PCNT |
+| MicroSD-Modul | SPI | `GPIO 23`, `19`, `18`, `5` | MOSI, MISO, SCK, CS | |
+| DS18B20 (Motor)| 1-Wire | `GPIO 4` | DQ | 4.7kΩ Pull-Up an 3.3V |
+| DS18B20 (ESC)| 1-Wire | `GPIO 4` | DQ | Parallelschaltung |
+| A3144 Hall-Sensor| Digital Out | `GPIO 2` | DO | PCNT-Nutzung |
 
-## 3. Stromversorgung (Power-Management)
+## 3. Stromversorgung
+Die Stromversorgung variiert je nach Setup, um Spannungsabfälle des ESP32 zu vermeiden.
 
-Abhängig von der gewählten Variante unterscheidet sich die Stromversorgung grundlegend, um Brownouts (Spannungsabfälle) des ESP32 zu verhindern.
+### 3.1 Variante A: Cloud
+Das LTE-Modem erfordert Spitzenströme bis zu 2 Ampere. Eine parallele Schaltung über ein USB-Breakout-Board ist notwendig.
+1. VCC (5V): Verlöten von zwei Kabeln am VCC-Pad des Breakout-Boards (zu ESP32 VIN und LTE-Modul VCC).
+2. GND: Verlöten von zwei Kabeln am GND-Pad des Breakout-Boards (zu ESP32 und LTE-Modul).
+3. Daten-Pins (D+ / D-) werden nicht belegt.
 
-### Variante A: Cloud (Isolierte Powerbank)
-Das LTE-Modem benötigt beim Senden im Mobilfunknetz kurzzeitig Stromspitzen von **bis zu 2 Ampere**. Um den ESP32 zu schützen, nutzen wir eine isolierte Parallel-Schaltung mittels eines **USB Breakout-Boards**.
-1. **VCC (5V Pluspol):** Zwei Kabel am `VCC`-Pad des Breakout-Boards verlöten. Ein Kabel führt zum `VIN` des ESP32, das andere direkt zum `VCC` des LTE-Moduls.
-2. **GND (Gemeinsame Masse):** Zwei Kabel am `GND`-Pad des Breakout-Boards verlöten und an ESP32 und LTE-Modul verteilen.
-3. *Daten-Pins (D+ / D-)* am Breakout-Board werden ignoriert.
+### 3.2 Variante B: Offline
+ESP32 und Sensorik benötigen 150-250 mA. Die Versorgung erfolgt über den Motorregler (ESC) und Empfänger.
+1. Anschluss eines Servokabels an den RC-Empfänger.
+2. Rotes Kabel (5V) an den VIN-Pin des ESP32.
+3. Schwarzes Kabel (GND) an den GND-Pin des ESP32.
 
-### Variante B: Offline (RC-Empfänger / BEC)
-In der Offline-Variante entfällt das stromhungrige LTE-Modul. Der ESP32 und die Sensorik verbrauchen zusammen nur ca. 150-250 mA. Dies kann problemlos vom Motorregler (ESC) über den Empfänger bereitgestellt werden.
-1. Ein Standard-Servokabel in einen freien Kanal des RC-Empfängers stecken.
-2. Das rote Kabel (5V) mit dem `VIN` Pin des ESP32 verbinden.
-3. Das schwarze Kabel (GND) mit einem `GND` Pin des ESP32 verbinden.
-4. *Vorteil:* Massive Gewichtsersparnis, da die schwere USB-Powerbank komplett entfällt.
+## 4. Schaltplan Generierung
+Der Schaltplan wird mit Python und `uv` erstellt.
 
-## 4. Schaltplan generieren (mit `uv`)
-
-Um den visuellen Lötplan als PNG zu generieren, nutzen wir Python und das Tool `uv`, um die Abhängigkeit (`graphviz`) nicht global im System installieren zu müssen.
-
-**graphviz:**
-
-1. System-Abhängigkeit installieren (Alpine Linux):
+1. System-Abhängigkeit (Alpine Linux):
    ```bash
    sudo apk add graphviz
    ```
-
-2. Tool `uv` herunterladen und Pfad laden:
+2. Tool `uv` herunterladen:
    ```bash
-   curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    source $HOME/.local/bin/env
    ```
-
 3. Skript ausführen:
    ```bash
    uv run --with graphviz schaltplan.py
    ```
 
 ## 5. Betrieb
-### Cloud Workflow
-1. **Boot:** Nach dem Verbinden der USB-Powerbank initialisiert der ESP32 die SD-Karte und wartet auf einen GPS-Fix.
-2. **Connect:** Das Modem wählt sich ins LTE-Netz ein und baut die TCP-Verbindung zum MQTT-Broker der Cloud auf.
-3. **Stream:** Sensordaten werden kontinuierlich erfasst und in Echtzeit an das Cloud-Dashboard gepusht. 
-4. **Analyse:** Die Auswertung der Fahrt (Geschwindigkeitskurven, Temperatur-Warnungen) erfolgt live über das Cloud-Frontend (z.B. Grafana), ein lokaler Download der CSV ist nur im Fehlerfall nötig.
 
-### Offline-Workflow:
-1. **Boot:** Das System startet automatisch mit dem Einschalten des RC-Autos (ESC).
-2. **Log:** Sensordaten werden mit 2 Hz kontinuierlich als JSON/CSV auf die MicroSD-Karte geschrieben.
-3. **Analyse:** Nach der Fahrt wird die MicroSD-Karte entnommen und manuell am PC in die Data-Analytics-Plattform eingelesen (Batch-Ingestion).
+### 5.1 Cloud-Workflow
+1. Boot: USB-Powerbank verbinden. Initialisierung der SD-Karte.
+2. Connect: Einwahl ins LTE-Netz und Aufbau der TCP-Verbindung zum MQTT-Broker.
+3. Stream: Kontinuierliche Erfassung und Übertragung der Sensordaten.
+4. Analyse: Auswertung im Cloud-Frontend.
+
+### 5.2 Offline-Workflow
+1. Boot: Systemstart bei Einschalten des RC-Fahrzeugs.
+2. Log: Speicherung der Sensordaten mit 2 Hz auf der MicroSD-Karte.
+3. Analyse: Manuelles Einlesen der MicroSD-Karte.
