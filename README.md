@@ -13,7 +13,7 @@
 
 ## 1. Projektbeschreibung und Spezifikationen
 
-<img src="testrun/test_im_fahrzeug/PXL_20260518_144521252.jpg" width="40%" alt="Test im Fahrzeug - Setup 1" /> <img src="testrun/test_im_fahrzeug/PXL_20260518_144728325.jpg" width="40%" alt="Carten Telemetrie Setup im Fahrzeug" />
+<img src="testrun/test_im_fahrzeug/PXL_20260518_144521252.jpg" width="30%" alt="Test im Fahrzeug - Setup 1" /> <img src="testrun/test_im_fahrzeug/PXL_20260518_144728325.jpg" width="30%" alt="Carten Telemetrie Setup im Fahrzeug" />
 
 Entwicklung eines lokalen Telemetriesystems für das ferngesteuerte Modellfahrzeug Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/kleinnconrad/RC100). Das System erfasst dynamische und thermische Parameter während des Fahrbetriebs.
 
