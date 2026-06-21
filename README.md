@@ -1,83 +1,92 @@
 # Carten Telemetrie
 
 ## Inhaltsverzeichnis
-* [1. Projektbeschreibung](#1-projektbeschreibung)
+* [1. Projektbeschreibung und Spezifikationen](#1-projektbeschreibung-und-spezifikationen)
 * [2. Stückliste (Bill of Materials)](#2-stueckliste-bill-of-materials)
-* [3. Schaltplan und Pin-Belegung](#3-schaltplan-und-pin-belegung)
-* [4. Aufbau](#4-aufbau)
-  * [4.1 Vorbereitung und Software](#41-vorbereitung-und-software)
-  * [4.2 Verkabelung und Energieversorgung](#42-verkabelung-und-energieversorgung)
+* [3. Schaltplan und Systemarchitektur](#3-schaltplan-und-systemarchitektur)
+* [4. Implementierung und Aufbau](#4-implementierung-und-aufbau)
+  * [4.1 Software und Firmware-Kompilierung](#41-software-und-firmware-kompilierung)
+  * [4.2 Elektrische Verkabelung](#42-elektrische-verkabelung)
   * [4.3 Mechanische Integration](#43-mechanische-integration)
-* [5. Betrieb](#5-betrieb)
-* [6. Reddit-Feedback-Synchronisation](#6-reddit-feedback-synchronisation)
+* [5. Betriebsmodus und Datenauswertung](#5-betriebsmodus-und-datenauswertung)
+* [6. CI/CD: Reddit-Feedback-Synchronisation](#6-cicd-reddit-feedback-synchronisation)
 
-## 1. Projektbeschreibung
+## 1. Projektbeschreibung und Spezifikationen
 
-<img src="testrun/test_im_fahrzeug/PXL_20260518_144728325.jpg" width="35%" alt="Carten Telemetrie Setup im Fahrzeug" />
+<img src="testrun/test_im_fahrzeug/PXL_20260518_144521252.jpg" width="20%" alt="Test im Fahrzeug - Setup 1" /> <img src="testrun/test_im_fahrzeug/PXL_20260518_144728325.jpg" width="20%" alt="Carten Telemetrie Setup im Fahrzeug" />
 
-Entwicklung eines Telemetriesystems für das Modell Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/kleinnconrad/RC100). Erfasste Parameter:
-* Temperatur (Motor, ESC)
-* Drehzahl (Kardanwelle)
-* GPS-Daten (Geschwindigkeit, Position)
+Entwicklung eines lokalen Telemetriesystems für das ferngesteuerte Modellfahrzeug Carten T410R [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/kleinnconrad/RC100). Das System erfasst dynamische und thermische Parameter während des Fahrbetriebs.
 
-Architektur-Variante:
-* Lokales Logging auf MicroSD-Karte
+**Erfasste Metriken und Spezifikationen:**
+* **Temperatur:** Erfassung von Motor- und ESC-Temperaturen (Messbereich -55°C bis +125°C, Auflösung 12-Bit) über den 1-Wire-Bus.
+* **Drehzahl:** RPM-Erfassung der Kardanwelle mittels Hall-Effekt-Sensor und Neodym-Magnet (Hardware-gestützter Pulse Counter).
+* **Geodaten:** Aufzeichnung von Längen- und Breitengrad sowie der absoluten Geschwindigkeit (GNSS/GPS-Satellitendaten via NMEA 0183-Protokoll, Updaterate 1 Hz bis 10 Hz konfigurierbar).
+
+**Architektur-Variante:**
+* Ausschließliches Offline-Logging auf einer lokalen MicroSD-Karte. Zur Vermeidung von Latenzen und Verbindungsabbrüchen findet keine Datenübertragung über drahtlose Netzwerke statt.
 
 ## 2. Stückliste (Bill of Materials)
-| Komponente | Spezifikation / Typ | Funktion |
-| :--- | :--- | :--- |
-| Microcontroller | ESP32 Dev Board (z.B. NodeMCU) | Ingestion |
-| GPS-Modul | BN-220 (u-blox) | Geodaten und Geschwindigkeit |
-| Speichermodul | MicroSD-Karten-Modul (SPI) | Datenspeicher (3.3V) |
-| Temperatursensor | DS18B20 | 2x 1-Wire Sensoren (Motor, ESC) |
-| Drehzahlsensor | Hall-Sensor Modul (A3144) | Erfassung des Magnetfelds |
-| Magnet | Neodym-Magnet (3x2mm) | Montage an Kardanwelle |
-| Stromversorgung | 3-Pin Servokabel | 5V Spannungsversorgung über RC-Empfänger |
+Für die Nachkonstruktion sind zwingend die folgenden Bauteile oder äquivalente Spezifikationen zu verwenden:
 
-## 3. Schaltplan und Pin-Belegung
-Alle Komponenten nutzen eine gemeinsame Masse (GND). Serielle Verbindungen (UART) erfordern gekreuzte Leitungen (TX an RX, RX an TX). Stromversorgung (ca. 200mA) erfolgt über das RC-Fahrzeug.
+| Komponente | Spezifikation / Typ | Funktion im System |
+| :--- | :--- | :--- |
+| Microcontroller | ESP32 Dev Board (30-Pin Variante, z.B. NodeMCU) | Zentrale Ingestion und Verarbeitung der Sensorik |
+| GPS-Modul | BN-220 (u-blox M8N) | Bereitstellung der Geodaten (Baudrate 9600) |
+| Speichermodul | MicroSD-Karten-Modul (SPI) | Persistenter Datenspeicher (zwingend 3.3V Logik) |
+| Temperatursensor | DS18B20 (TO-92 oder wasserdicht) | 2x Sensoren zur Temperaturüberwachung (Motor, ESC) |
+| Drehzahlsensor | Hall-Sensor Modul (A3144) | Detektion von Magnetfeldänderungen |
+| Magnet | Neodym-Magnet (3x2mm) | Rotierender Impulsgeber an der Kardanwelle |
+| Stromversorgung | 3-Pin Servokabel (JR-Stecker) | 5V Spannungsabgriff über das BEC des RC-Empfängers |
+
+## 3. Schaltplan und Systemarchitektur
+Alle Hardwarekomponenten nutzen eine gemeinsame Masse (GND) zur Vermeidung von Floating-Potenzialen. Die serielle UART-Verbindung zwischen ESP32 und GPS-Modul erfordert eine physikalische Kreuzung der Leitungen (TX an RX, RX an TX). Der Spitzenstrombedarf des Gesamtsystems liegt bei etwa 200 mA bis 250 mA.
 
 | Komponente | Interface | ESP32 Pin | Sensor Pin | Bemerkung |
 | :--- | :--- | :--- | :--- | :--- |
-| RC-Empfänger| Power | `VIN` | 5V (Rot) | Versorgung über ESC/Empfänger |
-| | | `GND` | GND (Schwarz)| Gemeinsame Masse |
-| GPS Modul| UART 2 | `GPIO 16` (RX2) | TX | VCC an 3.3V ESP32 |
+| RC-Empfänger| Power | `VIN` | 5V (Rot) | Parasitäre Versorgung über ESC/Empfänger (BEC) |
+| | | `GND` | GND (Schwarz)| Referenzpotenzial |
+| GPS Modul| UART 2 | `GPIO 16` (RX2) | TX | VCC-Spannungsversorgung zwingend über 3.3V des ESP32 |
 | | | `GPIO 17` (TX2) | RX | |
-| MicroSD-Modul | SPI | `GPIO 23`, `19`, `18`, `5` | MOSI, MISO, SCK, CS | VCC an 3.3V ESP32 |
-| DS18B20 | 1-Wire | `GPIO 4` | DQ (Daten) | Parallelschaltung |
-| A3144 Hall-Sensor| Dig. Out | `GPIO 2` | DO (Signal) | ESP32 PCNT Hardware-Counter |
+| MicroSD-Modul | SPI | `GPIO 23`, `19`, `18`, `5` | MOSI, MISO, SCK, CS | VCC-Spannungsversorgung zwingend über 3.3V des ESP32 |
+| DS18B20 | 1-Wire | `GPIO 4` | DQ (Daten) | Parallelschaltung beider Sensoren |
+| A3144 Hall-Sensor| Dig. Out | `GPIO 2` | DO (Signal) | Anbindung an ESP32 PCNT (Pulse Counter) |
 
-## 4. Aufbau
+*(Der detaillierte visuelle Schaltplan befindet sich im Verzeichnis `/schaltplan`.)*
 
-### 4.1 Vorbereitung und Software
-* Installation der Bibliotheken in Arduino IDE / PlatformIO: `TinyGPSPlus`, `OneWire`, `DallasTemperature`.
-* Flash-Vorgang der Firmware auf den ESP32.
+## 4. Implementierung und Aufbau
 
-### 4.2 Verkabelung und Energieversorgung
-* Servokabel mit `VIN` und `GND` des ESP32 verlöten. Anschluss an freien Kanal des RC-Empfängers.
-* Verbindung von GPS, SD-Modul, Hall-Sensor und Temperatursensoren gemäß Pin-Mapping.
-* Isolierung der Lötstellen.
+### 4.1 Software und Firmware-Kompilierung
+* **Umgebung:** Die Kompilierung erfordert PlatformIO oder die Arduino IDE.
+* **Bibliotheken:** Zur Übersetzung des Quellcodes müssen `TinyGPSPlus`, `OneWire` und `DallasTemperature` im Library-Manager installiert sein.
+* **Flash-Vorgang:** Die Firmware ist via USB-Schnittstelle auf den ESP32 zu überspielen. Bei Boot-Problemen ist der serielle Output (`115200` Baud) auf Initialisierungsfehler (z.B. SD-Karte nicht gefunden) zu prüfen.
+
+### 4.2 Elektrische Verkabelung
+* Das Servokabel ist polungsrichtig mit `VIN` (5V) und `GND` des ESP32 zu verlöten und an einen freien Port des RC-Empfängers anzuschließen.
+* Die Verbindung von GPS, SD-Modul, Hall-Sensor und Temperatursensoren ist zwingend gemäß der dokumentierten Pin-Belegung vorzunehmen.
+* Sämtliche Lötstellen sind durch Schrumpfschläuche zur Vermeidung von Kurzschlüssen bei Vibrationen zu isolieren.
 
 ### 4.3 Mechanische Integration
-* Befestigung der Elektronik im Chassis. Das GPS-Modul muss mit der Keramik-Antenne nach oben zeigen.
-* Montage des Neodym-Magneten auf der Kardanwelle. Gegengewicht anbringen.
-* Montage des Hall-Sensors am rotierenden Magneten.
-* Montage der Temperatursensoren am ESC und Motor.
+* **Zentraleinheit:** Die Befestigung des ESP32-Gehäuses im Chassis erfolgt über verschraubte Trägerplatten oder Klettband.
+* **GPS:** Das GPS-Modul muss horizontal montiert werden. Die Keramik-Antenne muss ungehindert nach oben zeigen.
+* **Drehzahlmessung:** Der Neodym-Magnet ist adhäsiv (z.B. Sekundenkleber oder Epoxidharz) auf der Kardanwelle zu fixieren. Ein entsprechendes Gegengewicht auf der gegenüberliegenden Seite der Welle verhindert Unwuchten bei hohen Rotationsgeschwindigkeiten. Der Hall-Sensor ist mit einem Spaltmaß von maximal 2 mm über dem Magneten starr zu positionieren.
+* **Temperaturen:** Die DS18B20-Sensoren sind mit Wärmeleitkleber an ESC und Motorgehäuse anzubringen.
 
-## 5. Betrieb
-* Systemstart bei Einschalten des RC-Fahrzeugs.
-* Aufzeichnung der Sensordaten mit 2 Hz als JSON/CSV auf die MicroSD-Karte.
-* Manuelles Einlesen der MicroSD-Karte zur Datenauswertung.
+## 5. Betriebsmodus und Datenauswertung
+* **Boot-Sequenz:** Das System startet autonom beim Einschalten des RC-Fahrzeugs. Nach erfolgreicher Initialisierung des SPI-Busses beginnt der Schreibvorgang.
+* **Logging-Zyklus:** Die Sensordaten werden mit einer Frequenz von 2 Hz auf die MicroSD-Karte geschrieben. Die Limitierung auf 2 Hz verhindert Schreib-Puffer-Überläufe (Buffer Overruns) der SD-Karte.
+* **Datenformat:** Die Ausgabe erfolgt als standardisierte CSV- oder JSON-Datei auf einer FAT32-formatierten Partition.
+* **Post-Processing:** Nach Abschluss der Fahrt ist die MicroSD-Karte manuell zu entnehmen. Die Rohdaten können in Tabellenkalkulationsprogrammen oder Analyse-Skripten visualisiert und evaluiert werden.
 
-## 6. Reddit-Feedback-Synchronisation
-Eine GitHub Action extrahiert Feedback aus dem Reddit-Thread und speichert es im Repository. Es wird der RSS-Feed genutzt.
+## 6. CI/CD: Reddit-Feedback-Synchronisation
+Eine konfigurierte GitHub Action dient der Extraktion von externem Projektfeedback aus dem verlinkten Reddit-Thread.
 
 ### Architektur
-* Skript (`scripts/fetch_reddit.py`): Abruf des RSS-Feeds und HTML-Bereinigung.
-* Automatisierung (`.github/workflows/reddit-sync.yml`): Tägliche Ausführung um 08:00 UTC.
-* Output: Speicherung neuer Kommentare in `reddit/reddit_feedback.md`. Automatischer Commit im `main` Branch.
+* **Python-Skript (`scripts/fetch_reddit.py`):** Verantwortlich für den Abruf des Reddit-RSS-Feeds und die HTML-Bereinigung der Kommentare.
+* **Automatisierung (`.github/workflows/reddit-sync.yml`):** Der Cronjob triggert die Pipeline arbeitstäglich um 08:00 UTC.
+* **Output-Handling:** Neu erfasste Kommentare werden in die Datei `reddit/reddit_feedback.md` geschrieben und durch die Action automatisch im `main`-Branch committet.
 
 ### Manueller Sync
-* GitHub Actions aufrufen.
-* Workflow "Fetch Reddit Feedback" auswählen.
-* Ausführung bestätigen. Die Datei `reddit_feedback.md` wird aktualisiert.
+Zur sofortigen Datensynchronisation:
+* Im GitHub-Repository den Tab "Actions" öffnen.
+* Den Workflow "Fetch Reddit Feedback" selektieren.
+* "Run workflow" ausführen. Die Markdown-Datei wird daraufhin aktualisiert.

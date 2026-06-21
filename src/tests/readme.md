@@ -1,23 +1,29 @@
-# Testverfahren
+# Testverfahren und Verifikation
 
 ## Inhaltsverzeichnis
-* [1. Allgemeine Vorbereitung](#1-allgemeine-vorbereitung)
-* [2. Phase 1: Systemstart](#2-phase-1-systemstart)
-* [3. Phase 2A: Temperatursensor](#3-phase-2a-temperatursensor)
-* [4. Phase 2B: Hall-Sensor](#4-phase-2b-hall-sensor)
-* [5. Phase 3: MicroSD-Karte](#5-phase-3-microsd-karte)
-* [6. Phase 4: GPS-Modul](#6-phase-4-gps-modul)
+* [1. Methodik und Akzeptanzkriterien](#1-methodik-und-akzeptanzkriterien)
+* [2. Allgemeine Vorbereitung](#2-allgemeine-vorbereitung)
+* [3. Phase 1: Systemstart](#3-phase-1-systemstart)
+* [4. Phase 2A: Temperatursensor](#4-phase-2a-temperatursensor)
+* [5. Phase 2B: Hall-Sensor](#5-phase-2b-hall-sensor)
+* [6. Phase 3: MicroSD-Karte](#6-phase-3-microsd-karte)
+* [7. Phase 4: GPS-Modul](#7-phase-4-gps-modul)
 
-## 1. Allgemeine Vorbereitung
-1. ESP32 über ein Daten-USB-Kabel mit dem PC verbinden.
-2. Arduino IDE öffnen und den jeweiligen Testcode in den Editor einfügen.
-3. Menü `Werkzeuge` -> `Board`: `ESP32 Dev Module` auswählen.
-4. Menü `Werkzeuge` -> `Port`: Zuweisung des COM-Ports.
-5. Upload-Schaltfläche betätigen. Falls notwendig, den BOOT-Taster am ESP32 für zwei Sekunden drücken.
-6. Seriellen Monitor öffnen und Baudrate auf 115200 einstellen.
+## 1. Methodik und Akzeptanzkriterien
+Die nachfolgenden Testroutinen dienen der isolierten Hardware-Verifikation (Unit-Tests der Peripherie). Jede Komponente muss zwingend einzeln geprüft werden, bevor die vollständige Firmware aufgespielt wird.
+Ein Test gilt als bestanden, wenn die Ausgabe im Seriellen Monitor präzise den definierten Erwartungswerten entspricht und keine Hardware-Timeouts gemeldet werden.
 
-## 2. Phase 1: Systemstart
-Prüfung der ESP32-Grundfunktion und des Uploads. Es wird nur der ESP32 ohne Peripherie benötigt.
+## 2. Allgemeine Vorbereitung
+1. Den ESP32 über ein Daten-USB-Kabel (zwingend mit intakten D+/D- Leitungen) mit dem PC verbinden.
+2. Die Arduino IDE öffnen und den jeweiligen Testcode in den Editor einfügen.
+3. Im Menü `Werkzeuge` -> `Board`: Die Vorgabe `ESP32 Dev Module` auswählen.
+4. Im Menü `Werkzeuge` -> `Port`: Die Zuweisung des erkannten COM-Ports (Windows) bzw. `/dev/ttyUSB*` (Linux/macOS) vornehmen.
+5. Die Upload-Schaltfläche betätigen. Falls der Verbindungsaufbau stagniert, den `BOOT`-Taster am ESP32 für zwei Sekunden gedrückt halten.
+6. Den Seriellen Monitor öffnen und die Baudrate exakt auf `115200` einstellen.
+
+## 3. Phase 1: Systemstart
+**Ziel:** Prüfung der ESP32-Grundfunktion, des seriellen Interfaces und des Flash-Vorgangs.
+**Akzeptanzkriterium:** Der serielle Monitor gibt abwechselnd im Sekunden-Takt "LED AN" und "LED AUS" aus. Die Onboard-LED blinkt synchron.
 
 ```cpp
 #include <Arduino.h>
@@ -41,8 +47,9 @@ void loop() {
 }
 ```
 
-## 3. Phase 2A: Temperatursensor
-Prüfung des OneWire-Busses. Anschluss eines DS18B20-Sensors (Pin 4).
+## 4. Phase 2A: Temperatursensor
+**Ziel:** Verifikation der 1-Wire-Kommunikation. Anschluss des DS18B20-Sensors an Pin 4.
+**Akzeptanzkriterium:** Die gemessene Temperatur wird in Celsius ausgegeben. Ein Auslesen des Werts `-127.00 C` indiziert einen Verbindungsabbruch oder Verdrahtungsfehler.
 
 ```cpp
 #include <Arduino.h>
@@ -71,8 +78,9 @@ void loop() {
 }
 ```
 
-## 4. Phase 2B: Hall-Sensor
-Prüfung des Interrupts. Anschluss des A3144 Hall-Sensors (Pin 2).
+## 5. Phase 2B: Hall-Sensor
+**Ziel:** Funktionsprüfung des Hardware-Interrupts am A3144 Hall-Sensor (Pin 2).
+**Akzeptanzkriterium:** Bei manueller Annäherung des Neodym-Magneten an den Sensor wird exakt ein Impuls auf dem Seriellen Monitor registriert. Mehrfachauslösungen weisen auf Prellen hin (Bouncing).
 
 ```cpp
 #include <Arduino.h>
@@ -101,8 +109,9 @@ void loop() {
 }
 ```
 
-## 5. Phase 3: MicroSD-Karte
-Prüfung des SPI-Busses und der Schreibfunktion. Anschluss des MicroSD-Moduls (CS an Pin 5) mit eingelegter FAT32-Karte.
+## 6. Phase 3: MicroSD-Karte
+**Ziel:** Verifikation des SPI-Busses und der Lese-/Schreibzyklen. Das Modul muss zwingend über 3.3V versorgt werden.
+**Akzeptanzkriterium:** Ausgabe der Bestätigung "Schreibvorgang abgeschlossen". Die SD-Karte (FAT32) enthält anschließend eine Datei `test.txt` mit dem Text "SD-Test erfolgreich".
 
 ```cpp
 #include <Arduino.h>
@@ -132,8 +141,9 @@ void setup() {
 void loop() {}
 ```
 
-## 6. Phase 4: GPS-Modul
-Empfang der NMEA-Rohdaten. Anschluss des BN-220 GPS-Moduls (RX an Pin 16, TX an Pin 17).
+## 7. Phase 4: GPS-Modul
+**Ziel:** Evaluierung des Hardware-UART-Empfangs von NMEA-Datensätzen des BN-220 Moduls (RX an Pin 16, TX an Pin 17).
+**Akzeptanzkriterium:** Der Monitor zeigt rohe NMEA-Sätze (z.B. `$GPRMC...`) an. Diese müssen unter freiem Himmel valide Koordinaten enthalten, andernfalls verbleiben die Datenfelder leer.
 
 ```cpp
 #include <Arduino.h>
