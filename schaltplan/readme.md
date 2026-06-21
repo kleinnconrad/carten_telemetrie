@@ -23,94 +23,69 @@ Dieses System erfasst Telemetriedaten (Geschwindigkeit, Drehzahl, Temperaturen) 
 ### Mermaid Diagramm
 
 ```mermaid
-%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+%%{init: {"flowchart": {"curve": "stepBefore"}}}%%
 flowchart LR
     subgraph RC ["RC Empfänger"]
         direction TB
-        rc_5v("[5V]")
-        rc_gnd("[GND]")
+        rc_5v[5V] ~~~ rc_gnd[GND]
     end
 
     subgraph ESP ["ESP32"]
         direction TB
-        esp_vin("[VIN]")
-        esp_3v3("[3V3]")
-        esp_gnd("[GND]")
-        esp_d2("[D2]")
-        esp_d4("[D4]")
-        esp_d5("[D5]")
-        esp_d18("[D18]")
-        esp_d19("[D19]")
-        esp_d23("[D23]")
-        esp_rx2("[RX2]")
-        esp_tx2("[TX2]")
+        esp_vin[VIN] ~~~ esp_3v3[3V3] ~~~ esp_gnd[GND] ~~~ esp_d2[D2] ~~~ esp_d4[D4] ~~~ esp_d5[D5] ~~~ esp_d18[D18] ~~~ esp_d19[D19] ~~~ esp_d23[D23] ~~~ esp_rx2[RX2] ~~~ esp_tx2[TX2]
     end
 
     subgraph SD ["MicroSD"]
         direction TB
-        sd_vcc("[VCC]")
-        sd_gnd("[GND]")
-        sd_mosi("[MOSI]")
-        sd_miso("[MISO]")
-        sd_sck("[SCK]")
-        sd_cs("[CS]")
+        sd_vcc[VCC] ~~~ sd_gnd[GND] ~~~ sd_mosi[MOSI] ~~~ sd_miso[MISO] ~~~ sd_sck[SCK] ~~~ sd_cs[CS]
     end
 
     subgraph GPS ["GPS BN-220"]
         direction TB
-        gps_vcc("[VCC]")
-        gps_gnd("[GND]")
-        gps_tx("[TX]")
-        gps_rx("[RX]")
+        gps_vcc[VCC] ~~~ gps_gnd[GND] ~~~ gps_tx[TX] ~~~ gps_rx[RX]
     end
 
     subgraph MOT ["Motor Temp"]
         direction TB
-        mot_vcc("[VDD]")
-        mot_gnd("[GND]")
-        mot_dq("[DQ]")
+        mot_vcc[VDD] ~~~ mot_gnd[GND] ~~~ mot_dq[DQ]
     end
 
     subgraph ESC ["ESC Temp"]
         direction TB
-        esc_vcc("[VDD]")
-        esc_gnd("[GND]")
-        esc_dq("[DQ]")
+        esc_vcc[VDD] ~~~ esc_gnd[GND] ~~~ esc_dq[DQ]
     end
 
     subgraph HALL ["Hall-Sensor"]
         direction TB
-        hall_vcc("[VCC]")
-        hall_gnd("[GND]")
-        hall_do("[DOUT]")
+        hall_vcc[VCC] ~~~ hall_gnd[GND] ~~~ hall_do[DOUT]
     end
 
-    rc_5v -->|5V| esp_vin
-    rc_gnd -->|Masse| esp_gnd
+    rc_5v --> esp_vin
+    rc_gnd --> esp_gnd
 
-    esp_3v3 -->|3.3V| sd_vcc
-    esp_3v3 -->|3.3V| gps_vcc
-    esp_3v3 -->|3.3V| mot_vcc
-    esp_3v3 -->|3.3V| esc_vcc
-    esp_3v3 -->|3.3V| hall_vcc
+    esp_3v3 --> sd_vcc
+    esp_3v3 --> gps_vcc
+    esp_3v3 --> mot_vcc
+    esp_3v3 --> esc_vcc
+    esp_3v3 --> hall_vcc
 
-    esp_gnd -->|Masse| sd_gnd
-    esp_gnd -->|Masse| gps_gnd
-    esp_gnd -->|Masse| mot_gnd
-    esp_gnd -->|Masse| esc_gnd
-    esp_gnd -->|Masse| hall_gnd
+    esp_gnd --> sd_gnd
+    esp_gnd --> gps_gnd
+    esp_gnd --> mot_gnd
+    esp_gnd --> esc_gnd
+    esp_gnd --> hall_gnd
 
-    esp_d23 -->|MOSI| sd_mosi
-    esp_d19 -->|MISO| sd_miso
-    esp_d18 -->|SCK| sd_sck
-    esp_d5 -->|CS| sd_cs
+    esp_d23 --> sd_mosi
+    esp_d19 --> sd_miso
+    esp_d18 --> sd_sck
+    esp_d5 --> sd_cs
 
-    esp_rx2 -->|RX| gps_tx
-    esp_tx2 -->|TX| gps_rx
+    esp_rx2 --> gps_tx
+    esp_tx2 --> gps_rx
 
-    esp_d4 -->|1-Wire| mot_dq
-    esp_d4 -->|1-Wire| esc_dq
-    esp_d2 -->|Signal| hall_do
+    esp_d4 --> mot_dq
+    esp_d4 --> esc_dq
+    esp_d2 --> hall_do
 ```
 
 ## 3. Pin-Mapping
