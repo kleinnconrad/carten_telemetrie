@@ -1,29 +1,34 @@
-# Cloud-Architektur: Serverless IoT Streaming (Azure)
+# Cloud-Architektur in Azure
 
-Dieses Projekt nutzt einen zu 100 % Serverless-basierten Ansatz in der Microsoft Azure Cloud. Dadurch entstehen im Leerlauf (wenn das Auto nicht fährt) **keine laufenden Compute-Kosten**. Die Pipeline verarbeitet die JSON-Telemetriedaten in Echtzeit und stellt sie für Live-Dashboards bereit.
+## Inhaltsverzeichnis
+* [1. Architektur](#1-architektur)
+* [2. Datenfluss](#2-datenfluss)
+  * [2.1 Ingestion Layer: Azure IoT Hub](#21-ingestion-layer-azure-iot-hub)
+  * [2.2 Processing Layer: Azure Functions](#22-processing-layer-azure-functions)
+  * [2.3 Storage Layer: Azure Cosmos DB](#23-storage-layer-azure-cosmos-db)
+  * [2.4 Presentation Layer](#24-presentation-layer)
+
+## 1. Architektur
+Das Projekt nutzt einen Serverless-Ansatz in Microsoft Azure. Es entstehen im Leerlauf keine Compute-Kosten. Die Pipeline verarbeitet Telemetriedaten und stellt sie bereit.
 
 ![pipeline](https://github.com/kleinnconrad/carten_telemetrie/blob/main/cloud_integration/Azure_Cloud_Pipeline.png)
 
-## Der Datenfluss (Pipeline)
+## 2. Datenfluss
 
-### 1. Ingestion Layer: Azure IoT Hub (F1 Free Tier)
-Das ist das physische Eingangstor für das RC-Car in die Azure-Cloud. Der IoT Hub agiert als verwalteter MQTT-Broker.
-* **Aufgabe:** Sichere Authentifizierung des ESP32 und hochperformantes Entgegennehmen der JSON-Payloads (`ts`, `rpm`, `temp_mot`, `spd`, etc.).
-* **Kosten:** 0,00 € (Das Free Tier erlaubt 8.000 Nachrichten pro Tag, ausreichend für RC-Speedruns).
+### 2.1 Ingestion Layer: Azure IoT Hub
+* Aufgabe: Authentifizierung des ESP32 und Empfang der JSON-Payloads.
+* Kosten: Free Tier.
 
-### 2. Processing Layer: Azure Functions (Consumption Plan)
-Anstatt einen teuren Databricks-Cluster 24/7 laufen zu lassen, nutzen wir Event-getriebenes Computing. Die Azure Function wacht nur auf, wenn Daten ankommen.
-* **Trigger:** Gekoppelt über einen "IoT Hub Trigger". Sobald ein JSON-Paket vom Auto ankommt, feuert die Funktion in Millisekunden.
-* **Aufgabe:** Entpacken des JSON, Plausibilitätsprüfung (z.B. GPS-Ausreißer filtern), Timestamp-Konvertierung und dynamisches Routing (Speicherung + Live-Push).
-* **Kosten:** Die ersten 1 Million Ausführungen/Monat sind kostenlos (Praktisch 0,00 €).
+### 2.2 Processing Layer: Azure Functions
+* Trigger: Event-getriebenes Computing. Die Azure Function wird bei Dateneingang ausgelöst.
+* Aufgabe: JSON-Verarbeitung, Datenprüfung, Timestamp-Konvertierung und Routing.
+* Kosten: Consumption Plan.
 
-### 3. Storage Layer: Azure Cosmos DB (Serverless Mode)
-Eine NoSQL-Datenbank, die native JSON-Dokumente mit extrem niedriger Latenz wegschreibt und automatisch indiziert.
-* **Setup:** Zwingend im **"Serverless"**-Modus anlegen, um stündliche Fixkosten zu vermeiden!
-* **Aufgabe:** Langzeitspeicherung jedes validierten Telemetrie-Pakets als einzelnes Dokument für spätere Performance-Analysen.
-* **Kosten:** Nur wenige Cent im Monat (Abrechnung erfolgt rein nach tatsächlichen Request Units (RUs) während der Fahrt).
+### 2.3 Storage Layer: Azure Cosmos DB
+* Setup: Serverless-Modus.
+* Aufgabe: Speicherung der Telemetrie-Pakete als JSON-Dokumente.
+* Kosten: Abrechnung nach Request Units.
 
-### 4. Presentation Layer (Live-Dashboard)
-Die Azure Function leitet den Datenstrom parallel zur Datenbank an ein Präsentations-Layer weiter:
-* **Option A (Power BI):** Ein Push-Dataset empfängt die Daten via REST-API. Das Dashboard aktualisiert Tachos und Liniendiagramme ohne Browser-Refresh.
-* **Option B (Azure SignalR + Static Web App):** Die Daten werden via WebSockets direkt in eine mobile Web-App gepusht (ideal für die Live-Ansicht auf dem Smartphone direkt an der Strecke).
+### 2.4 Presentation Layer
+* Option A (Power BI): Push-Dataset empfängt Daten via REST-API.
+* Option B (Azure SignalR + Static Web App): Datenübertragung via WebSockets an eine Web-App.

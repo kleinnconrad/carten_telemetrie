@@ -1,29 +1,30 @@
-# ESP32 Sensor-Station & Gehäuselösung
+# ESP32 Sensor-Station und Gehäuse
 
-Dieser Ordner enthält die 3D-Druck-Dateien (STL) für eine ESP32-basierte Sensor-Station. Das Projekt kombiniert ein Gehäuse für den Mikrocontroller mit einem eigens entwickelten Trägerboard für verschiedene Sensor- und Speichermodule.
+## Inhaltsverzeichnis
+* [1. Übersicht](#1-übersicht)
+* [2. Dateiliste](#2-dateiliste)
+* [3. Hardware-Komponenten](#3-hardware-komponenten)
+* [4. Quellen](#4-quellen)
 
-## Enthaltene 3D-Modelle
+## 1. Übersicht
+Dieser Ordner enthält die 3D-Druck-Dateien (STL) für eine ESP32-Sensor-Station. Das Projekt besteht aus einem Gehäuse für den Mikrocontroller und einem Trägerboard für Sensor- und Speichermodule.
+
+## 2. Dateiliste
 
 | Dateiname | Beschreibung | Herkunft |
 | :--- | :--- | :--- |
-| `sensor_board_.stl` | Maßgeschneiderte Trägerplatte zur sicheren Montage der Peripherie. Bietet dedizierten Platz für 2x Temperatur-Sensoren, 1x Micro-SD-Modul und 1x GPS-Modul. | Eigenentwicklung |
-| `esp32-30pin-breakoutboard-case.stl` | Hauptgehäuse, passend für ein ESP32 Development Board (30 Pins) in Kombination mit einem Terminal-Breakout-Board. | Extern (Printables) |
-| `esp32-30pin-breakoutboard-lid.stl` | Passgenauer Deckel (Snap-Fit) für das ESP32-Gehäuse. | Extern (Printables) |
+| `sensor_board_.stl` | Trägerplatte für Peripherie. Montageplätze für 2 Temperatur-Sensoren, 1 Micro-SD-Modul und 1 GPS-Modul. | Eigenentwicklung |
+| `esp32-30pin-breakoutboard-case.stl` | Gehäuse für ESP32 Development Board (30 Pins) und Terminal-Breakout-Board. | Extern |
+| `esp32-30pin-breakoutboard-lid.stl` | Deckel für ESP32-Gehäuse. | Extern |
 
-## Unterstützte Hardware
+## 3. Hardware-Komponenten
+Die Konstruktion ist für folgende Hardware ausgelegt:
+* Mikrocontroller: ESP32 Development Board (30 Pins)
+* Erweiterung: Terminal-Breakout-Board für ESP32
+* Sensoren: 2 Temperatur-Sensoren
+* Speicher: 1 Micro-SD-Karten-Modul
+* Ortung: 1 GPS-Modul
 
-Die Konstruktion ist für die Unterbringung der folgenden Hardware-Komponenten ausgelegt:
-
-* **Mikrocontroller:** ESP32 Development Board (30-Pin Variante)
-* **Erweiterung:** Terminal-Breakout-Board für den ESP32
-* **Sensoren:** 2x Temperatur-Sensoren
-* **Speicher:** 1x Micro-SD-Karten-Modul (zur Datenaufzeichnung/Logging)
-* **Ortung:** 1x GPS-Modul
-
-## 🔗 Quellen
-
-Während das `sensor_board_.stl` eine Eigenentwicklung für dieses spezifische Projekt ist, stammen die Gehäuseteile für den ESP32 (Case und Lid) aus der 3D-Druck-Community. 
-
-Ursprünglicher Designer des ESP32-Gehäuses:
-* **Modell:** [ESP32 30-pin breakout board case + snap fit lid](https://www.printables.com/model/856471-esp32-30-pin-breakout-board-case-snap-fit-lid/files)
-* **Ersteller:** [@Goofee_2018635 auf Printables](https://www.printables.com/@Goofee_2018635)
+## 4. Quellen
+* Modell: [ESP32 30-pin breakout board case + snap fit lid](https://www.printables.com/model/856471-esp32-30-pin-breakout-board-case-snap-fit-lid/files)
+* Ersteller: [@Goofee_2018635 auf Printables](https://www.printables.com/@Goofee_2018635)
