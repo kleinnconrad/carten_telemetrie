@@ -23,80 +23,94 @@ Dieses System erfasst Telemetriedaten (Geschwindigkeit, Drehzahl, Temperaturen) 
 ### Mermaid Diagramm
 
 ```mermaid
-graph LR
-    subgraph "RC Empfänger"
-        v5[5V Rot]
-        gnd_rx[GND Schwarz]
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+flowchart LR
+    subgraph RC ["RC Empfänger"]
+        direction TB
+        rc_5v("[5V]")
+        rc_gnd("[GND]")
     end
 
-    subgraph "ESP32"
-        vin[VIN 5V In]
-        v33[3V3 Out]
-        gnd_esp[GND]
-        d2[D2]
-        d4[D4]
-        d5[D5]
-        d18[D18]
-        d19[D19]
-        d23[D23]
-        rx2[RX2]
-        tx2[TX2]
+    subgraph ESP ["ESP32"]
+        direction TB
+        esp_vin("[VIN]")
+        esp_3v3("[3V3]")
+        esp_gnd("[GND]")
+        esp_d2("[D2]")
+        esp_d4("[D4]")
+        esp_d5("[D5]")
+        esp_d18("[D18]")
+        esp_d19("[D19]")
+        esp_d23("[D23]")
+        esp_rx2("[RX2]")
+        esp_tx2("[TX2]")
     end
 
-    subgraph "MicroSD"
-        sd_vcc[VCC]
-        sd_gnd[GND]
-        sd_mosi[MOSI]
-        sd_miso[MISO]
-        sd_sck[SCK]
-        sd_cs[CS]
+    subgraph SD ["MicroSD"]
+        direction TB
+        sd_vcc("[VCC]")
+        sd_gnd("[GND]")
+        sd_mosi("[MOSI]")
+        sd_miso("[MISO]")
+        sd_sck("[SCK]")
+        sd_cs("[CS]")
     end
 
-    subgraph "GPS BN-220"
-        gps_vcc[VCC]
-        gps_gnd[GND]
-        gps_tx[TX]
-        gps_rx[RX]
+    subgraph GPS ["GPS BN-220"]
+        direction TB
+        gps_vcc("[VCC]")
+        gps_gnd("[GND]")
+        gps_tx("[TX]")
+        gps_rx("[RX]")
     end
 
-    subgraph "Sensoren"
-        mot_vcc[Motor Temp VDD]
-        mot_gnd[Motor Temp GND]
-        mot_dq[Motor Temp Data]
-        esc_vcc[ESC Temp VDD]
-        esc_gnd[ESC Temp GND]
-        esc_dq[ESC Temp Data]
-        hall_vcc[Hall VCC]
-        hall_gnd[Hall GND]
-        hall_do[Hall DOUT]
+    subgraph MOT ["Motor Temp"]
+        direction TB
+        mot_vcc("[VDD]")
+        mot_gnd("[GND]")
+        mot_dq("[DQ]")
     end
 
-    v5 -->|Stromversorgung| vin
-    gnd_rx -->|Masse| gnd_esp
+    subgraph ESC ["ESC Temp"]
+        direction TB
+        esc_vcc("[VDD]")
+        esc_gnd("[GND]")
+        esc_dq("[DQ]")
+    end
 
-    v33 -->|3.3V| sd_vcc
-    gnd_esp -->|Masse| sd_gnd
-    d23 -->|MOSI| sd_mosi
-    d19 -->|MISO| sd_miso
-    d18 -->|SCK| sd_sck
-    d5 -->|CS| sd_cs
+    subgraph HALL ["Hall-Sensor"]
+        direction TB
+        hall_vcc("[VCC]")
+        hall_gnd("[GND]")
+        hall_do("[DOUT]")
+    end
 
-    v33 -->|3.3V| gps_vcc
-    gnd_esp -->|Masse| gps_gnd
-    rx2 -->|RX| gps_tx
-    tx2 -->|TX| gps_rx
+    rc_5v -->|5V| esp_vin
+    rc_gnd -->|Masse| esp_gnd
 
-    v33 -->|3.3V| mot_vcc
-    gnd_esp -->|Masse| mot_gnd
-    d4 -->|1-Wire| mot_dq
+    esp_3v3 -->|3.3V| sd_vcc
+    esp_3v3 -->|3.3V| gps_vcc
+    esp_3v3 -->|3.3V| mot_vcc
+    esp_3v3 -->|3.3V| esc_vcc
+    esp_3v3 -->|3.3V| hall_vcc
 
-    v33 -->|3.3V| esc_vcc
-    gnd_esp -->|Masse| esc_gnd
-    d4 -->|1-Wire| esc_dq
+    esp_gnd -->|Masse| sd_gnd
+    esp_gnd -->|Masse| gps_gnd
+    esp_gnd -->|Masse| mot_gnd
+    esp_gnd -->|Masse| esc_gnd
+    esp_gnd -->|Masse| hall_gnd
 
-    v33 -->|3.3V| hall_vcc
-    gnd_esp -->|Masse| hall_gnd
-    d2 -->|Signal| hall_do
+    esp_d23 -->|MOSI| sd_mosi
+    esp_d19 -->|MISO| sd_miso
+    esp_d18 -->|SCK| sd_sck
+    esp_d5 -->|CS| sd_cs
+
+    esp_rx2 -->|RX| gps_tx
+    esp_tx2 -->|TX| gps_rx
+
+    esp_d4 -->|1-Wire| mot_dq
+    esp_d4 -->|1-Wire| esc_dq
+    esp_d2 -->|Signal| hall_do
 ```
 
 ## 3. Pin-Mapping
