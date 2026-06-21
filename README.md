@@ -4,8 +4,6 @@
 * [1. Projektbeschreibung](#1-projektbeschreibung)
 * [2. Stückliste (Bill of Materials)](#2-stueckliste-bill-of-materials)
 * [3. Schaltplan und Pin-Belegung](#3-schaltplan-und-pin-belegung)
-  * [3.1 Variante A: Cloud (LTE)](#31-variante-a-cloud-lte)
-  * [3.2 Variante B: Offline (Lokales Logging)](#32-variante-b-offline-lokales-logging)
 * [4. Aufbau](#4-aufbau)
   * [4.1 Vorbereitung und Software](#41-vorbereitung-und-software)
   * [4.2 Verkabelung und Energieversorgung](#42-verkabelung-und-energieversorgung)
@@ -19,43 +17,23 @@ Entwicklung eines Telemetriesystems für das Modell Carten T410R [![GitHub Repo]
 * Drehzahl (Kardanwelle)
 * GPS-Daten (Geschwindigkeit, Position)
 
-Architektur-Varianten:
-* Cloud-Version: Live-Streaming über LTE (MQTT)
-* Offline-Version: Lokales Logging auf MicroSD-Karte
+Architektur-Variante:
+* Lokales Logging auf MicroSD-Karte
 
 ## 2. Stückliste (Bill of Materials)
-| Komponente | Spezifikation / Typ | Variante | Funktion |
-| :--- | :--- | :--- | :--- |
-| Microcontroller | ESP32 Dev Board (z.B. NodeMCU) | Beide | Ingestion |
-| GPS-Modul | BN-220 (u-blox) | Beide | Geodaten und Geschwindigkeit |
-| Speichermodul | MicroSD-Karten-Modul (SPI) | Beide | Datenspeicher (3.3V) |
-| Temperatursensor | DS18B20 | Beide | 2x 1-Wire Sensoren (Motor, ESC) |
-| Drehzahlsensor | Hall-Sensor Modul (A3144) | Beide | Erfassung des Magnetfelds |
-| Magnet | Neodym-Magnet (3x2mm) | Beide | Montage an Kardanwelle |
-| Widerstand | 4,7 kΩ | Beide | Pull-Up für 1-Wire Bus |
-| LTE-Modem | SIM7000G Breakout-Board | Cloud | Cloud-Anbindung |
-| Stromversorgung 1| USB Powerbank | Cloud | 5V Spannungsversorgung |
-| Stromversorgung 2| 3-Pin Servokabel | Offline | 5V Spannungsversorgung über RC-Empfänger |
+| Komponente | Spezifikation / Typ | Funktion |
+| :--- | :--- | :--- |
+| Microcontroller | ESP32 Dev Board (z.B. NodeMCU) | Ingestion |
+| GPS-Modul | BN-220 (u-blox) | Geodaten und Geschwindigkeit |
+| Speichermodul | MicroSD-Karten-Modul (SPI) | Datenspeicher (3.3V) |
+| Temperatursensor | DS18B20 | 2x 1-Wire Sensoren (Motor, ESC) |
+| Drehzahlsensor | Hall-Sensor Modul (A3144) | Erfassung des Magnetfelds |
+| Magnet | Neodym-Magnet (3x2mm) | Montage an Kardanwelle |
+| Widerstand | 4,7 kΩ | Pull-Up für 1-Wire Bus |
+| Stromversorgung | 3-Pin Servokabel | 5V Spannungsversorgung über RC-Empfänger |
 
 ## 3. Schaltplan und Pin-Belegung
-Alle Komponenten nutzen eine gemeinsame Masse (GND). Serielle Verbindungen (UART) erfordern gekreuzte Leitungen (TX an RX, RX an TX).
-
-### 3.1 Variante A: Cloud (LTE)
-Verwendung eines LTE-Moduls und einer separaten Spannungsquelle zur Vermeidung von Spannungsabfällen am ESP32.
-
-| Komponente | Interface | ESP32 Pin | Sensor Pin | Bemerkung |
-| :--- | :--- | :--- | :--- | :--- |
-| USB Powerbank | Power | `VIN` | 5V Out | Parallele Versorgung von ESP32 und LTE |
-| LTE Modul | UART 1 | `GPIO 32` (RX1) | TX | VCC an 5V Powerbank |
-| | | `GPIO 33` (TX1) | RX | |
-| GPS Modul| UART 2 | `GPIO 16` (RX2) | TX | VCC an 3.3V ESP32 |
-| | | `GPIO 17` (TX2) | RX | |
-| MicroSD-Modul | SPI | `GPIO 23`, `19`, `18`, `5` | MOSI, MISO, SCK, CS | VCC an 3.3V ESP32 |
-| DS18B20 | 1-Wire | `GPIO 4` | DQ (Daten) | Parallelschaltung, 4.7kΩ Pull-Up an 3.3V |
-| A3144 Hall-Sensor| Dig. Out | `GPIO 2` | DO (Signal) | ESP32 PCNT Hardware-Counter |
-
-### 3.2 Variante B: Offline (Lokales Logging)
-Verzicht auf Modem und separate Spannungsquelle. Stromversorgung über das RC-Fahrzeug.
+Alle Komponenten nutzen eine gemeinsame Masse (GND). Serielle Verbindungen (UART) erfordern gekreuzte Leitungen (TX an RX, RX an TX). Stromversorgung (ca. 200mA) erfolgt über das RC-Fahrzeug.
 
 | Komponente | Interface | ESP32 Pin | Sensor Pin | Bemerkung |
 | :--- | :--- | :--- | :--- | :--- |
@@ -70,12 +48,11 @@ Verzicht auf Modem und separate Spannungsquelle. Stromversorgung über das RC-Fa
 ## 4. Aufbau
 
 ### 4.1 Vorbereitung und Software
-* Installation der Bibliotheken in Arduino IDE / PlatformIO: `TinyGPSPlus`, `OneWire`, `DallasTemperature`. Für die Cloud-Variante zusätzlich: `TinyGSM`, `PubSubClient`.
+* Installation der Bibliotheken in Arduino IDE / PlatformIO: `TinyGPSPlus`, `OneWire`, `DallasTemperature`.
 * Flash-Vorgang der Firmware auf den ESP32.
 
 ### 4.2 Verkabelung und Energieversorgung
-* Cloud-Variante: USB-Breakout-Board als Y-Verteiler nutzen. 5V-Leitung isoliert zu ESP32 (`VIN`) und LTE-Modem (`VCC`) verlegen.
-* Offline-Variante: Servokabel mit `VIN` und `GND` des ESP32 verlöten. Anschluss an freien Kanal des RC-Empfängers.
+* Servokabel mit `VIN` und `GND` des ESP32 verlöten. Anschluss an freien Kanal des RC-Empfängers.
 * Verbindung von GPS, SD-Modul, Hall-Sensor und Temperatursensoren gemäß Pin-Mapping.
 * Einbau des 4,7 kΩ Widerstands zwischen 3.3V-Leitung und Datenleitung der Temperatursensoren.
 * Isolierung der Lötstellen.
@@ -87,13 +64,6 @@ Verzicht auf Modem und separate Spannungsquelle. Stromversorgung über das RC-Fa
 * Montage der Temperatursensoren am ESC und Motor.
 
 ## 5. Betrieb
-
-### Variante A (Cloud)
-* Verbinden der USB-Powerbank. Initialisierung der SD-Karte und GPS-Fix-Suche.
-* Automatischer Verbindungsaufbau zum LTE-Netz und zur Cloud (MQTT-Broker).
-* Übertragung der Daten mit 2 Hz als JSON-Payload.
-
-### Variante B (Offline)
 * Systemstart bei Einschalten des RC-Fahrzeugs.
 * Aufzeichnung der Sensordaten mit 2 Hz als JSON/CSV auf die MicroSD-Karte.
 * Manuelles Einlesen der MicroSD-Karte zur Datenauswertung.

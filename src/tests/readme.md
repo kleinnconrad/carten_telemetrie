@@ -6,8 +6,7 @@
 * [3. Phase 2A: Temperatursensor](#3-phase-2a-temperatursensor)
 * [4. Phase 2B: Hall-Sensor](#4-phase-2b-hall-sensor)
 * [5. Phase 3: MicroSD-Karte](#5-phase-3-microsd-karte)
-* [6. Phase 4A: GPS-Modul](#6-phase-4a-gps-modul)
-* [7. Phase 4B: LTE-Modem](#7-phase-4b-lte-modem)
+* [6. Phase 4: GPS-Modul](#6-phase-4-gps-modul)
 
 ## 1. Allgemeine Vorbereitung
 1. ESP32 über ein Daten-USB-Kabel mit dem PC verbinden.
@@ -133,7 +132,7 @@ void setup() {
 void loop() {}
 ```
 
-## 6. Phase 4A: GPS-Modul
+## 6. Phase 4: GPS-Modul
 Empfang der NMEA-Rohdaten. Anschluss des BN-220 GPS-Moduls (RX an Pin 16, TX an Pin 17).
 
 ```cpp
@@ -153,33 +152,6 @@ void loop() {
   while (SerialGPS.available()) {
     char c = SerialGPS.read();
     Serial.print(c);
-  }
-}
-```
-
-## 7. Phase 4B: LTE-Modem
-Prüfung der AT-Kommunikation mit dem SIM7000 Modem (RX an Pin 32, TX an Pin 33). Stabile Spannungsversorgung erforderlich.
-
-```cpp
-#include <Arduino.h>
-#include <HardwareSerial.h>
-
-const int LTE_RX_PIN = 32;
-const int LTE_TX_PIN = 33;
-HardwareSerial SerialLTE(1);
-
-void setup() {
-  Serial.begin(115200);
-  SerialLTE.begin(115200, SERIAL_8N1, LTE_RX_PIN, LTE_TX_PIN); 
-  SerialLTE.println("AT");
-}
-
-void loop() {
-  if (SerialLTE.available()) {
-    Serial.write(SerialLTE.read());
-  }
-  if (Serial.available()) {
-    SerialLTE.write(Serial.read());
   }
 }
 ```
