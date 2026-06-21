@@ -23,9 +23,3 @@ Der Test fokussierte sich auf die Verifikation von Systemstabilität und Datenin
 * **Stromversorgung:** Der Test war erfolgreich. Das BEC des Empfängers lieferte ausreichend Strom (Spitzen bis 250 mA) für den Bootvorgang. Brownout-Erkennungen des ESP32 blieben aus.
 * **Datenaufzeichnung:** Das Logging auf die MicroSD-Karte verlief vollständig fehlerfrei. Es wurden keine verlorenen Schreibzyklen (Dropped Frames) verzeichnet.
 * **Sensordaten:** Die in der Datei `log.csv` erfassten Parameter (Temperaturwerte in °C, GPS-Koordinaten) wurden einer Plausibilitätsprüfung unterzogen. Die Temperaturwerte lagen stabil im Umgebungsspektrum (ca. 22 °C), und der GPS-Fix erreichte eine akzeptable HDOP (Horizontal Dilution of Precision).
-
-## 4. Visuelle Dokumentation
-Die nachfolgenden Bilder dokumentieren das physische Setup im RC-Fahrzeug.
-
-<img src="https://github.com/kleinnconrad/carten_telemetrie/blob/main/testrun/test_im_fahrzeug/PXL_20260518_144521252.jpg?raw=true" width="50%" alt="Test im Fahrzeug - Setup 1">
-<img src="https://github.com/kleinnconrad/carten_telemetrie/blob/main/testrun/test_im_fahrzeug/PXL_20260518_144728325.jpg?raw=true" width="50%" alt="Test im Fahrzeug - Setup 2">
