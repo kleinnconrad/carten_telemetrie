@@ -15,7 +15,6 @@ Dieser Ordner enthält die 3D-Druck-Dateien (STL) für die Fertigung der ESP32-S
 
 | Dateiname | Beschreibung | Herkunft |
 | :--- | :--- | :--- |
-| `sensor_board_.stl` | Trägerplatte für die Peripherie. Enthält dedizierte Montageplätze für zwei Temperatursensoren (DS18B20), das Micro-SD-Modul und das GPS-Modul. | Eigenentwicklung |
 | `esp32-30pin-breakoutboard-case.stl` | Unteres Gehäuseelement für das ESP32 Development Board (30-Pin Variante) inklusive des Terminal-Breakout-Boards. | Extern |
 | `esp32-30pin-breakoutboard-lid.stl` | Deckel für das ESP32-Gehäuse mit Snap-Fit-Mechanismus (Einrast-Verschluss). | Extern |
 
